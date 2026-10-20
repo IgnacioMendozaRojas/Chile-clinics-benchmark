@@ -18,11 +18,11 @@ import shutil
 import sys
 import tempfile
 import time
-from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
 
+from .fetch import Quarter, download, filings_for, last_closed_quarter, quarter_range
 from .issuers import Issuer, load_issuers
 
 # Facts that must be there for a quarter to count as usable for the benchmark.
@@ -37,58 +37,14 @@ KEY_CONCEPTS = {
 QUICK_PERIODS = ["2016Q4", "2019Q4", "2022Q4", "2024Q2", "2025Q4", "2026Q2"]
 
 
-@dataclass(frozen=True, order=True)
-class Quarter:
-    year: int
-    q: int
-
-    @property
-    def month(self) -> int:
-        return 3 * self.q
-
-    @property
-    def end(self) -> dt.date:
-        return (pd.Timestamp(self.year, self.month, 1) + pd.offsets.MonthEnd(0)).date()
-
-    def __str__(self) -> str:
-        return f"{self.year}Q{self.q}"
-
-    @classmethod
-    def parse(cls, text: str) -> Quarter:
-        year, q = text.upper().split("Q")
-        if int(q) not in (1, 2, 3, 4):
-            raise ValueError(f"bad quarter {text!r}")
-        return cls(int(year), int(q))
-
-
-def last_closed_quarter(today: dt.date) -> Quarter:
-    q = (today.month - 1) // 3  # quarter that ended before the current one
-    return Quarter(today.year, q) if q else Quarter(today.year - 1, 4)
-
-
-def quarter_range(start: Quarter, end: Quarter) -> list[Quarter]:
-    out, y, q = [], start.year, start.q
-    while (y, q) <= (end.year, end.q):
-        out.append(Quarter(y, q))
-        y, q = (y, q + 1) if q < 4 else (y + 1, 1)
-    return out
-
-
 def check_quarter(filings, issuer: Issuer, quarter: Quarter) -> dict:
     """Download, parse and discard one package. Never raises: the outcome is a row."""
     from eqr.data import xbrl
 
-    row = {"issuer": issuer.key, "rut": issuer.rut_label, "period": str(quarter), "status": "missing"}
-    try:
-        data = filings.package(issuer.rut, quarter.year, quarter.month)
-    except (LookupError, FileNotFoundError):
+    status, data, size = download(filings, issuer, quarter)
+    row = {"issuer": issuer.key, "rut": issuer.rut_label, "period": str(quarter), "status": status}
+    if data is None:
         return row
-    except Exception as err:  # network or HTTP error: report, keep going
-        return {**row, "status": f"error: {type(err).__name__}"}
-    finally:
-        cached = filings._cached(issuer.rut, quarter.year, quarter.month)
-        size = cached.stat().st_size if cached.exists() else 0
-        cached.unlink(missing_ok=True)
     try:
         facts = xbrl.parse_instance(xbrl.instance_from_zip(data))
         values = xbrl.period_values(facts, quarter.end)
@@ -106,12 +62,9 @@ def check_quarter(filings, issuer: Issuer, quarter: Quarter) -> dict:
 
 
 def run(issuers: list[Issuer], quarters: list[Quarter], pause: float, workdir: Path) -> pd.DataFrame:
-    from eqr.data.cmf import CmfFilings
-
     rows = []
     for issuer in issuers:
-        filings = CmfFilings(workdir / issuer.key)
-        filings.entity_params = {**filings.entity_params, "vig": issuer.cmf_status}
+        filings = filings_for(issuer, workdir)
         for quarter in quarters:
             row = check_quarter(filings, issuer, quarter)
             rows.append(row)

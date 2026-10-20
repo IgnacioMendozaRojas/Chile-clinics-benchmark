@@ -1,0 +1,32 @@
+name: Explore XBRL concepts
+
+# Development aid: inventory of the concepts and dimensions each issuer files.
+# Results are force-pushed to the `explore/xbrl-inventory` branch (never to main).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install --no-cache-dir .
+      - run: python -m clinics.inventory --out "$RUNNER_TEMP/inventory"
+      - name: Push to explore branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch --orphan explore/xbrl-inventory
+          git rm -rq --cached . || true
+          rm -rf ./* .github .gitignore
+          cp -r "$RUNNER_TEMP/inventory" inventory
+          git add inventory
+          git commit -qm "XBRL concept inventory ($(date -u +%F))"
+          git push -f origin explore/xbrl-inventory

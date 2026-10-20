@@ -71,6 +71,8 @@ def test_check_quarter_reads_and_deletes_package(tmp_path):
     assert row["has_revenue"] and row["has_assets"] and row["has_trade_receivables"]
     assert not list(tmp_path.iterdir())  # nothing left on disk
     missing = probe.check_quarter(fake, issuer, probe.Quarter(2025, 3))
+    assert probe.Quarter(2025, 1).shift(-1) == probe.Quarter(2024, 4)
+    assert probe.Quarter(2024, 4).shift(5) == probe.Quarter(2026, 1)
     assert missing["status"] == "missing"
 
 
