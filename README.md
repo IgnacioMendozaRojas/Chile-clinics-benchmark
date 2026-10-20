@@ -67,6 +67,8 @@ demand), committed only when every validation passes and something changed.
   not substituted: substituting would mix accounting bases inside quarterly and LTM figures (a restated full year
   minus nine months that were never restated). Example: in its December 2025 filing CLC restated December 2024 trade
   receivables from CLP 85.2 bn to 26.0 bn and equity from 204.1 bn to 136.6 bn.
+- **Figures** plot the as-reported series. Periods a later filing restated are marked, and the revised figure is
+  shown as a separate point, so the size of each restatement is visible without breaking the series.
 - **Quarters and LTM.** Chilean filings report flows year to date; quarter = YTD(q) − YTD(q−1);
   LTM = YTD(q) + FY(y−1) − YTD(q, y−1). Flow-based ratios use LTM to remove seasonality.
 - **Concepts.** Each variable maps to the CL-CI/IFRS tags in [`config/concepts.yaml`](config/concepts.yaml),
