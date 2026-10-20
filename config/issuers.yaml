@@ -1,0 +1,62 @@
+# Issuers in the benchmark. Only entities that file IFRS statements with the CMF.
+#
+# rut / dv      RUT without and with check digit (the CMF site uses the bare number)
+# type          provider   = clinic operator, receivables from Isapres stay on its balance sheet
+#               integrated = owns an Isapre and clinics; intra-group receivables are eliminated
+#                            on consolidation, so payer-exposure metrics are not comparable
+# cmf_status    VI (vigente) or NV (no vigente) in the CMF securities registry; selects the
+#               entity page used to list filings
+# panel         core = post-crisis comparison set; historical = series ends with deregistration
+# notes         context that the README and the coverage matrix must surface
+
+issuers:
+  clc:
+    name: Clínica Las Condes S.A.
+    short: CLC
+    rut: 93930000
+    dv: "7"
+    type: provider
+    cmf_status: VI
+    panel: core
+    notes: >
+      FY2025 statements filed late (trading suspended Apr-2026) and restated;
+      change of control to Euroamerica in 2026. Keep the latest filed figures per period.
+
+  indisa:
+    name: Instituto de Diagnóstico S.A.
+    short: Indisa
+    rut: 92051000
+    dv: "0"
+    type: provider
+    cmf_status: VI
+    panel: core
+
+  redsalud:
+    name: Empresas Red Salud S.A.
+    short: RedSalud
+    rut: 76020458
+    dv: "7"
+    type: provider
+    cmf_status: VI
+    panel: core
+    notes: Regional clinics ("Clínicas Regionales") reported as a sub-entity where the MD&A breaks them out.
+
+  banmedica:
+    name: Banmédica S.A.
+    short: Banmédica
+    rut: 96528990
+    dv: "9"
+    type: integrated
+    cmf_status: NV
+    panel: historical
+    notes: Shares delisted in 2020; all bonds redeemed on 5-Sep-2024, after which it stopped filing.
+
+  bupa:
+    name: Bupa Chile S.A.
+    short: Bupa Chile
+    rut: 76005001
+    dv: "6"
+    type: integrated
+    cmf_status: NV
+    panel: historical
+    notes: Listed as "No Vigente" in the CMF registry; last filing date to be established by the probe.

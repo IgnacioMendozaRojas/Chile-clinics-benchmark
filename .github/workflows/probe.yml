@@ -1,0 +1,51 @@
+name: Probe CMF reachability
+
+# Manual check: can GitHub-hosted runners reach cmfchile.cl and download XBRL packages?
+# Nothing is committed; results go to the job summary.
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: "quick = sample quarters, full = every quarter since 2016"
+        type: choice
+        options: [quick, full]
+        default: quick
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Raw HTTP reachability
+        run: |
+          {
+            echo "## HTTP reachability from the runner"
+            echo
+            echo "| URL | HTTP status | Time (s) |"
+            echo "|---|---|---|"
+            for url in \
+              "https://www.cmfchile.cl/" \
+              "https://www.cmfchile.cl/institucional/mercados/entidad.php?mercado=V&rut=76020458&tipoentidad=RVEMI&vig=VI&control=svs&pestania=3" \
+              "https://api.cmfchile.cl/"; do
+              out=$(curl -sS -o /dev/null -w '%{http_code} %{time_total}' --max-time 30 -A 'Mozilla/5.0' "$url" 2>&1 || true)
+              echo "| $url | ${out% *} | ${out##* } |"
+            done
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install --no-cache-dir .
+
+      - name: XBRL coverage
+        run: |
+          flag=$([ "${{ inputs.scope }}" = "full" ] && echo "" || echo "--quick")
+          python -m clinics.probe $flag >> "$GITHUB_STEP_SUMMARY"
