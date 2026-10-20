@@ -1,0 +1,158 @@
+# Canonical variables -> XBRL concepts (taxonomy CL-CI, an IFRS extension).
+#
+# kind       stock = balance at quarter end; flow = year-to-date figure as filed
+# tags       tried in order; the first one the issuer reports for that period is used
+# sign       expense = take the absolute value (filers use both sign conventions for costs)
+# overrides  issuer-specific tag lists, when one issuer files the item under another concept
+#
+# Checked against the concept inventory of all five issuers' filings 2016Q1-2026Q2
+# (python -m clinics.inventory): every face-statement tag below is filed by every issuer in
+# every quarter, except where noted. Sign conventions in the filings: costs positive,
+# income tax positive for an expense, credit losses positive for a loss.
+
+variables:
+  # ---- balance sheet ------------------------------------------------------
+  assets:
+    kind: stock
+    label: Total assets
+    tags: [ifrs-full:Assets]
+  current_assets:
+    kind: stock
+    label: Current assets
+    tags: [ifrs-full:CurrentAssets]
+  noncurrent_assets:
+    kind: stock
+    label: Non-current assets
+    tags: [ifrs-full:NoncurrentAssets]
+  cash:
+    kind: stock
+    label: Cash and cash equivalents
+    tags: [ifrs-full:CashAndCashEquivalents]
+  trade_receivables_current:
+    kind: stock
+    label: Trade and other receivables, current (net)
+    tags: [ifrs-full:TradeAndOtherCurrentReceivables]
+  inventories:
+    kind: stock
+    label: Inventories
+    tags: [ifrs-full:Inventories]
+  ppe:
+    kind: stock
+    label: Property, plant and equipment
+    tags: [ifrs-full:PropertyPlantAndEquipment]
+  liabilities:
+    kind: stock
+    label: Total liabilities
+    tags: [ifrs-full:Liabilities]
+  current_liabilities:
+    kind: stock
+    label: Current liabilities
+    tags: [ifrs-full:CurrentLiabilities]
+  other_financial_liabilities_current:
+    kind: stock
+    label: Other financial liabilities, current (bank debt, bonds)
+    tags: [ifrs-full:OtherCurrentFinancialLiabilities]
+  other_financial_liabilities_noncurrent:
+    kind: stock
+    label: Other financial liabilities, non-current
+    tags: [ifrs-full:OtherNoncurrentFinancialLiabilities]
+  lease_liabilities_current:
+    kind: stock
+    label: Lease liabilities, current
+    # separate balance-sheet line (not inside other financial liabilities) since IFRS 16 (2019)
+    tags: [ifrs-full:CurrentLeaseLiabilities]
+  lease_liabilities_noncurrent:
+    kind: stock
+    label: Lease liabilities, non-current
+    tags: [ifrs-full:NoncurrentLeaseLiabilities]
+  trade_payables_current:
+    kind: stock
+    label: Trade and other payables, current
+    tags: [ifrs-full:TradeAndOtherCurrentPayables]
+  equity:
+    kind: stock
+    label: Total equity
+    tags: [ifrs-full:Equity]
+  equity_parent:
+    kind: stock
+    label: Equity attributable to owners of the parent
+    tags: [ifrs-full:EquityAttributableToOwnersOfParent]
+  equity_and_liabilities:
+    kind: stock
+    label: Total equity and liabilities
+    tags: [ifrs-full:EquityAndLiabilities]
+
+  # ---- income statement (year to date) ----------------------------------------
+  revenue:
+    kind: flow
+    label: Revenue
+    tags: [ifrs-full:Revenue]
+  cost_of_sales:
+    kind: flow
+    label: Cost of sales
+    sign: expense
+    tags: [ifrs-full:CostOfSales]
+  gross_profit:
+    kind: flow
+    label: Gross profit
+    tags: [ifrs-full:GrossProfit]
+  distribution_costs:
+    kind: flow
+    label: Distribution costs
+    # none of the current issuers presents it separately; kept so EBIT stays defined if one does
+    sign: expense
+    tags: [ifrs-full:DistributionCosts]
+  administrative_expense:
+    kind: flow
+    label: Administrative expenses
+    sign: expense
+    tags: [ifrs-full:AdministrativeExpense]
+  impairment_credit_losses:
+    kind: flow
+    label: Credit losses (IFRS 9) on the face of the income statement
+    # only Indisa (2019Q4 on), CLC (2025Q4 on) and Banmédica (2024Q2) present this line; otherwise credit
+    # losses sit in cost of sales or administrative expenses. The notes layer will cover all issuers.
+    sign: expense
+    tags: [ifrs-full:ImpairmentLossImpairmentGainAndReversalOfImpairmentLossDeterminedInAccordanceWithIFRS9]
+  finance_income:
+    kind: flow
+    label: Finance income
+    tags: [ifrs-full:FinanceIncome]
+  finance_costs:
+    kind: flow
+    label: Finance costs
+    sign: expense
+    tags: [ifrs-full:FinanceCosts]
+  profit_before_tax:
+    kind: flow
+    label: Profit before tax
+    tags: [ifrs-full:ProfitLossBeforeTax]
+  income_tax:
+    kind: flow
+    label: Income tax expense
+    tags: [ifrs-full:IncomeTaxExpenseContinuingOperations]
+  profit_loss:
+    kind: flow
+    label: Profit (loss)
+    tags: [ifrs-full:ProfitLoss]
+  profit_parent:
+    kind: flow
+    label: Profit attributable to owners of the parent
+    tags: [ifrs-full:ProfitLossAttributableToOwnersOfParent]
+  depreciation_amortisation:
+    kind: flow
+    label: Depreciation and amortisation
+    # from the notes (cash flows are direct-method, so there is no add-back line)
+    sign: expense
+    tags: [ifrs-full:DepreciationAndAmortisationExpense]
+
+  # ---- cash flow (year to date; Chilean filers use the direct method) -----------
+  operating_cash_flow:
+    kind: flow
+    label: Net cash from operating activities
+    tags: [ifrs-full:CashFlowsFromUsedInOperatingActivities]
+  capex:
+    kind: flow
+    label: Purchases of property, plant and equipment
+    sign: expense
+    tags: [ifrs-full:PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities]

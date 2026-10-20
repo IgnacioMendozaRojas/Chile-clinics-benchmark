@@ -29,6 +29,7 @@ packages = ["src/clinics"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "config/issuers.yaml" = "clinics/_config/issuers.yaml"
+"config/concepts.yaml" = "clinics/_config/concepts.yaml"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

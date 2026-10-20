@@ -1,0 +1,55 @@
+name: Update data
+
+# Rebuilds every table in data/processed from the CMF filings and commits them when they
+# change. Twice a month, because issuers file on different dates (and some late); a run
+# with no new or restated filings changes nothing and makes no commit.
+on:
+  schedule:
+    - cron: "17 9 1,16 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install --no-cache-dir .
+
+      - name: Rebuild tables
+        id: build
+        run: python -m clinics.update --out data/processed --annotate
+
+      - name: Commit if changed
+        if: steps.build.outcome == 'success'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/processed
+          if git diff --cached --quiet; then
+            echo "::notice title=No changes::data/processed is up to date"
+          else
+            git commit -qm "Update data ($(date -u +%F))"
+            git push
+          fi
+
+      - name: Keep failed output for review
+        if: failure() && steps.build.outcome == 'failure'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c update-failed
+          git add -f data/processed
+          git commit -qm "Failed update output ($(date -u +%F))" || exit 0
+          git push -f origin update-failed
+          echo "::warning title=Validation failed::Output pushed to the update-failed branch for review; main untouched"
