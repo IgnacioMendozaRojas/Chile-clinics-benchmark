@@ -1,7 +1,8 @@
 name: Probe CMF reachability
 
 # Manual check: can GitHub-hosted runners reach cmfchile.cl and download XBRL packages?
-# Nothing is committed; results go to the job summary.
+# Nothing is committed; results go to the job summary and, one line per URL/issuer,
+# to run annotations (readable through the REST API without downloading logs).
 on:
   workflow_dispatch:
     inputs:
@@ -34,6 +35,7 @@ jobs:
               "https://api.cmfchile.cl/"; do
               out=$(curl -sS -o /dev/null -w '%{http_code} %{time_total}' --max-time 30 -A 'Mozilla/5.0' "$url" 2>&1 || true)
               echo "| $url | ${out% *} | ${out##* } |"
+              echo "::notice title=HTTP ${out% *}::${url} (${out##* }s)" >&2
             done
             echo
           } >> "$GITHUB_STEP_SUMMARY"
@@ -48,4 +50,4 @@ jobs:
       - name: XBRL coverage
         run: |
           flag=$([ "${{ inputs.scope }}" = "full" ] && echo "" || echo "--quick")
-          python -m clinics.probe $flag >> "$GITHUB_STEP_SUMMARY"
+          python -m clinics.probe $flag --annotate >> "$GITHUB_STEP_SUMMARY"

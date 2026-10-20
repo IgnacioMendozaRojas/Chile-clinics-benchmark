@@ -140,6 +140,16 @@ def summary(results: pd.DataFrame, issuers: dict[str, Issuer]) -> str:
     return "\n".join(lines)
 
 
+def annotations(results: pd.DataFrame, issuers: dict[str, Issuer]) -> list[str]:
+    """GitHub Actions workflow commands: one notice per issuer with every quarter's status."""
+    out = []
+    for key, grp in results.groupby("issuer", sort=False):
+        ok = int((grp["status"] == "xbrl").sum())
+        detail = ", ".join(f"{p}={s}" for p, s in zip(grp["period"], grp["status"], strict=True))
+        out.append(f"::notice title=XBRL {issuers[key].short} {ok}/{len(grp)}::{detail}")
+    return out
+
+
 def matrix(results: pd.DataFrame) -> str:
     """Markdown grid issuer x year, one symbol per quarter: ● usable, ◐ partial, · missing, ! error."""
     sym = {"xbrl": "●", "xbrl-partial": "◐", "missing": "·"}
@@ -162,6 +172,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--quick", action="store_true", help=f"only {', '.join(QUICK_PERIODS)}")
     p.add_argument("--pause", type=float, default=0.5, help="seconds between requests (be polite)")
     p.add_argument("--csv", type=Path, help="also write the long table here")
+    p.add_argument("--annotate", action="store_true", help="also emit GitHub Actions notices (to stderr)")
     args = p.parse_args(argv)
 
     catalog = load_issuers()
@@ -184,6 +195,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.csv:
         results.to_csv(args.csv, index=False)
+    if args.annotate:
+        print("\n".join(annotations(results, catalog)), file=sys.stderr)
     print("## XBRL coverage\n")
     print(summary(results, catalog))
     print("\n● usable · missing ◐ statements incomplete ! download error (one symbol per quarter)\n")
