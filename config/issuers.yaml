@@ -49,7 +49,7 @@ issuers:
     type: integrated
     cmf_status: NV
     panel: historical
-    notes: Shares delisted in 2020; all bonds redeemed on 5-Sep-2024, after which it stopped filing.
+    notes: Shares delisted in 2020; all bonds redeemed on 5-Sep-2024. XBRL available 2016Q1-2024Q2 (probe, Oct-2026).
 
   bupa:
     name: Bupa Chile S.A.
@@ -59,4 +59,4 @@ issuers:
     type: integrated
     cmf_status: NV
     panel: historical
-    notes: Listed as "No Vigente" in the CMF registry; last filing date to be established by the probe.
+    notes: Listed as "No Vigente" in the CMF registry. XBRL available 2016Q1-2022Q1 (probe, Oct-2026).

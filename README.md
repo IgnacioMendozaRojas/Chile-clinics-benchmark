@@ -25,6 +25,14 @@ intra-group receivables are eliminated on consolidation: they enter every financ
 separately in payer-exposure metrics. Banmédica and Bupa no longer file with the CMF, so their series stop at
 their last filing — a series ending is not an improvement.
 
+XBRL coverage, quarter by quarter since 2016Q1 (checked with `clinics.probe` from GitHub Actions, Oct-2026):
+
+| Issuer | Quarterly XBRL filings |
+|---|---|
+| CLC, Indisa, RedSalud | 2016Q1 – 2026Q2, no gaps |
+| Banmédica | 2016Q1 – 2024Q2 |
+| Bupa Chile | 2016Q1 – 2022Q1 |
+
 ## Data layers
 
 | Layer | Source | Automation |
