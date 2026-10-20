@@ -140,7 +140,7 @@ def summary(results: pd.DataFrame, issuers: dict[str, Issuer]) -> str:
     return "\n".join(lines)
 
 
-def annotations(results: pd.DataFrame, issuers: dict[str, Issuer]) -> list[str]:
+def notices(results: pd.DataFrame, issuers: dict[str, Issuer]) -> list[str]:
     """GitHub Actions workflow commands: one notice per issuer with every quarter's status."""
     out = []
     for key, grp in results.groupby("issuer", sort=False):
@@ -196,7 +196,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.csv:
         results.to_csv(args.csv, index=False)
     if args.annotate:
-        print("\n".join(annotations(results, catalog)), file=sys.stderr)
+        print("\n".join(notices(results, catalog)), file=sys.stderr)
     print("## XBRL coverage\n")
     print(summary(results, catalog))
     print("\n● usable · missing ◐ statements incomplete ! download error (one symbol per quarter)\n")

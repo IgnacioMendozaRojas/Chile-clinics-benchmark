@@ -88,5 +88,5 @@ def test_summary_and_matrix_flag_gaps():
     assert "| Indisa | 92.051.000-0 | provider | 2/4 | 2025Q1 | 2025Q3 |" in text
     assert "2025Q2 (missing)" in text and "2025Q4 (error: ConnectionError)" in text
     assert "●·●!" in probe.matrix(results)
-    (notice,) = probe.annotations(results, issuers)
+    (notice,) = probe.notices(results, issuers)
     assert notice.startswith("::notice title=XBRL Indisa 2/4::2025Q1=xbrl, 2025Q2=missing")
