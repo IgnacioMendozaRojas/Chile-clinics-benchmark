@@ -7,8 +7,9 @@ A self-updating benchmark of Chilean private clinic groups, rebuilt entirely fro
 in 2023, as a strategy and investment analyst in the sector. This repository rebuilds it from scratch, from public
 sources only, so that it updates itself every quarter.
 
-> **Status: work in progress.** Step 1 (checking that every issuer's XBRL filings can be downloaded automatically)
-> is in place. Indicators, validations and figures follow.
+> **Status: work in progress.** Financial statements and financial indicators are built automatically from XBRL
+> and validated (see [`data/processed`](data/processed)). Notes (receivables ageing, allowances, overdue payables),
+> capacity and activity, real terms, figures and the project page follow.
 
 ## Coverage
 
@@ -45,6 +46,40 @@ XBRL coverage, quarter by quarter since 2016Q1 (checked with `clinics.probe` fro
 The CMF XBRL connector is reused from
 [equity-research-engine](https://github.com/IgnacioMendozaRojas/equity-research-engine), where it is validated
 against SEC filings.
+
+## Published tables
+
+Rebuilt from scratch by [`update.yml`](.github/workflows/update.yml) on the 1st and 16th of each month (and on
+demand), committed only when every validation passes and something changed.
+
+| File | Contents |
+|---|---|
+| [`statements.csv`](data/processed/statements.csv) | Issuer × quarter × variable, in CLP: balances, year-to-date flows as filed, the quarter, and last twelve months (LTM) |
+| [`indicators.csv`](data/processed/indicators.csv) | Issuer × quarter × indicator, with issuer type and panel |
+| [`restatements.csv`](data/processed/restatements.csv) | Figures a later filing presents differently: as reported vs revised |
+| [`validation_report.md`](data/processed/validation_report.md) | Errors, warnings and restatements found in the latest run |
+| [`coverage.csv`](data/processed/coverage.csv) | Which quarters each issuer filed |
+
+### Method
+
+- **As reported.** Every figure comes from the filing of its own period. When a later filing restates a period in
+  its comparative columns, the revision is logged in `restatements.csv` and the period is flagged (`restated`), but
+  not substituted: substituting would mix accounting bases inside quarterly and LTM figures (a restated full year
+  minus nine months that were never restated). Example: in its December 2025 filing CLC restated December 2024 trade
+  receivables from CLP 85.2 bn to 26.0 bn and equity from 204.1 bn to 136.6 bn.
+- **Quarters and LTM.** Chilean filings report flows year to date; quarter = YTD(q) − YTD(q−1);
+  LTM = YTD(q) + FY(y−1) − YTD(q, y−1). Flow-based ratios use LTM to remove seasonality.
+- **Concepts.** Each variable maps to the CL-CI/IFRS tags in [`config/concepts.yaml`](config/concepts.yaml),
+  checked against the concepts all five issuers actually file. Costs are taken in absolute value (filers use both
+  sign conventions).
+- **Definitions.** Operating result (EBIT) = gross profit − distribution − administrative expenses − credit losses
+  presented on the face of the income statement (so issuers that show IFRS 9 losses separately and those that
+  include them in expenses are measured alike). EBITDA adds depreciation and amortisation, including right-of-use
+  assets from 2019 (IFRS 16 is a level break for every issuer). Gross financial debt = other financial
+  liabilities + lease liabilities; net debt subtracts cash. All ratios are nominal: both sides are from the same
+  period, so inflation cancels.
+- **Validations.** Assets = liabilities + equity (error above 0.1%: nothing is published), assets = current +
+  non-current, gross profit and net income arithmetic, missing core items, quarter-on-quarter jumps, restatements.
 
 ## Check XBRL coverage
 

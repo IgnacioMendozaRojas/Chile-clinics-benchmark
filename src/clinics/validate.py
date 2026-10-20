@@ -134,6 +134,19 @@ def run(statements: pd.DataFrame, restated: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(out, columns=cols).sort_values(["severity", "issuer", "period", "check"]).reset_index(drop=True)
 
 
+PERCENT_CHECKS = {"balance", "asset_split", "jump_assets", "jump_revenue"}
+
+
+def _fmt(check: str, value: float) -> str:
+    if pd.isna(value):
+        return ""
+    if check in PERCENT_CHECKS:
+        return f"{value:.2%}"
+    if check in {"restated", "missing"}:
+        return f"{value:.0f}"
+    return f"{value / 1e9:,.2f} bn"  # peso amounts
+
+
 def report(findings: pd.DataFrame, coverage: pd.DataFrame) -> str:
     """Markdown summary for data/processed/validation_report.md."""
     lines = ["# Validation report", ""]
@@ -156,6 +169,6 @@ def report(findings: pd.DataFrame, coverage: pd.DataFrame) -> str:
             "|---|---|---|---|---|",
         ]
         for r in f.itertuples(index=False):
-            value = "" if pd.isna(r.value) else (f"{r.value:.2%}" if abs(r.value) < 10 else f"{r.value:,.0f}")
+            value = _fmt(r.check, r.value)
             lines.append(f"| {r.check} | {r.issuer} | {r.period} | {value} | {r.message} |")
     return "\n".join(lines) + "\n"

@@ -133,3 +133,23 @@ def test_validation_flags_unbalanced_sheet():
     assert list(errors["check"]) == ["balance"]
     assert errors["value"].iloc[0] == pytest.approx(0.01)
     assert "missing" in set(f["check"])
+
+
+def test_report_formats_values_by_check():
+    findings = pd.DataFrame(
+        [
+            {
+                "severity": "error",
+                "check": "balance",
+                "issuer": "clc",
+                "period": "2025Q2",
+                "value": 0.01,
+                "message": "x",
+            },
+            {"severity": "info", "check": "restated", "issuer": "clc", "period": "2024Q4", "value": 5, "message": "y"},
+        ]
+    )
+    cov = pd.DataFrame([{"issuer": "clc", "quarters": 2, "first": "2025Q1", "last": "2025Q2"}])
+    text = validate.report(findings, cov)
+    assert "| balance | clc | 2025Q2 | 1.00% | x |" in text
+    assert "| restated | clc | 2024Q4 | 5 | y |" in text
