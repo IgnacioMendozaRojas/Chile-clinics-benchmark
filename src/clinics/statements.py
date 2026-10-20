@@ -1,7 +1,7 @@
 """Canonical quarterly statements: one value per issuer x quarter x variable.
 
-Input is `facts.latest()` (most recent filed figure per concept and period). For each
-variable in `config/concepts.yaml` the first listed tag the issuer reports is used.
+Input is `facts.as_reported()`: every figure as reported in its own period's filing.
+For each variable in `config/concepts.yaml` the first listed tag the issuer reports is used.
 
 * stock variables: balance at the quarter end
 * flow variables: Chilean filings report flows year to date (Jan-Mar, Jan-Jun, ...), so
@@ -26,7 +26,7 @@ CONFIG = Path(__file__).resolve().parents[2] / "config" / "concepts.yaml"
 if not CONFIG.exists():  # installed wheel
     CONFIG = Path(__file__).resolve().parent / "_config" / "concepts.yaml"
 
-RESTATEMENT_TOLERANCE = 0.001  # 0.1% of the first-reported value
+RESTATEMENT_TOLERANCE = 0.001  # 0.1% of the as-reported value
 
 
 @dataclass(frozen=True)
@@ -60,9 +60,9 @@ def load_variables(path: Path = CONFIG) -> dict[str, Variable]:
 class _Lookup:
     """Fast (concept, start, end) -> fact row access for one issuer."""
 
-    def __init__(self, latest: pd.DataFrame):
+    def __init__(self, reported: pd.DataFrame):
         self.rows = {}
-        for r in latest.itertuples(index=False):
+        for r in reported.itertuples(index=False):
             start = r.start if isinstance(r.start, dt.date) else None
             self.rows[(r.concept, start, r.end)] = r
 
@@ -75,25 +75,27 @@ def _signed(value: float, var: Variable) -> float:
 
 
 def _restated(row) -> bool:
-    if row is None or row.first_value is None or (isinstance(row.first_value, float) and math.isnan(row.first_value)):
+    """A later filing presents this period with a different figure."""
+    revised = getattr(row, "revised_value", math.nan)
+    if revised is None or (isinstance(revised, float) and math.isnan(revised)):
         return False
-    base = max(abs(row.first_value), 1.0)
-    return abs(row.value - row.first_value) / base > RESTATEMENT_TOLERANCE
+    return abs(revised - row.value) / max(abs(row.value), 1.0) > RESTATEMENT_TOLERANCE
 
 
 def _ytd(lk: _Lookup, tag: str, q: Quarter):
     return lk.get(tag, dt.date(q.year, 1, 1), q.end)
 
 
-def build(latest: pd.DataFrame, periods: dict[str, list[Quarter]], variables: dict[str, Variable]) -> pd.DataFrame:
+def build(reported: pd.DataFrame, periods: dict[str, list[Quarter]], variables: dict[str, Variable]) -> pd.DataFrame:
     """Long table: issuer, period, variable, kind, value, quarter, ltm, concept, filing, restated.
 
+    `restated` marks figures that a later filing presents differently (see `restatements`).
     `periods` maps each issuer to the quarters it actually filed (statements are built only there).
     `value` is the balance (stocks) or the year-to-date figure (flows).
     """
     rows = []
     for issuer, quarters in periods.items():
-        lk = _Lookup(latest[latest["issuer"] == issuer])
+        lk = _Lookup(reported[reported["issuer"] == issuer])
         for q in quarters:
             for var in variables.values():
                 row = {"issuer": issuer, "period": str(q), "period_end": q.end, "variable": var.name, "kind": var.kind}
@@ -153,14 +155,13 @@ def build(latest: pd.DataFrame, periods: dict[str, list[Quarter]], variables: di
     return out
 
 
-def restatements(latest: pd.DataFrame, variables: dict[str, Variable]) -> pd.DataFrame:
-    """Mapped concepts whose most recent filed value differs from the first-reported one."""
+def restatements(reported: pd.DataFrame, variables: dict[str, Variable]) -> pd.DataFrame:
+    """Mapped figures that a later filing presents with a different value (as reported vs revised)."""
     tags = {t for v in variables.values() for t in v.tags} | {
         t for v in variables.values() for ts in v.overrides.values() for t in ts
     }
-    f = latest[latest["concept"].isin(tags) & latest["first_value"].notna()].copy()
-    base = f["first_value"].abs().clip(lower=1.0)
-    f["change_pct"] = (f["value"] - f["first_value"]) / base
+    f = reported[reported["concept"].isin(tags) & reported["revised_value"].notna()].copy()
+    f["change_pct"] = (f["revised_value"] - f["value"]) / f["value"].abs().clip(lower=1.0)
     f = f[f["change_pct"].abs() > RESTATEMENT_TOLERANCE]
-    cols = ["issuer", "concept", "start", "end", "first_value", "first_filing", "value", "filing", "change_pct"]
+    cols = ["issuer", "concept", "start", "end", "value", "filing", "revised_value", "revised_filing", "change_pct"]
     return f[cols].sort_values(["issuer", "end", "concept"]).reset_index(drop=True)

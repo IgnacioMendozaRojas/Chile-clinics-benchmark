@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from clinics import indicators, statements, validate
-from clinics.facts import latest
+from clinics.facts import as_reported
 from clinics.fetch import Quarter
 
 V = {
@@ -31,13 +31,13 @@ def fact(filing, concept, end, value, start=None):
     }
 
 
-def ytd_rows(filing, year, month, revenue, cost):
+def ytd_rows(filing, year, month, revenue, cost, assets=None):
     end = (pd.Timestamp(year, month, 1) + pd.offsets.MonthEnd(0)).date()
     jan1 = dt.date(year, 1, 1)
     return [
         fact(filing, "ifrs-full:Revenue", end, revenue, jan1),
         fact(filing, "ifrs-full:CostOfSales", end, -cost, jan1),  # negative sign convention
-        fact(filing, "ifrs-full:Assets", end, 1000 + month),
+        fact(filing, "ifrs-full:Assets", end, 1000 + month if assets is None else assets),
     ]
 
 
@@ -47,39 +47,42 @@ def facts():
     # 2024: quarterly revenue 100, 110, 120, 130 (YTD 100, 210, 330, 460); cost = 60% of revenue
     for q, ytd in zip((1, 2, 3, 4), (100, 210, 330, 460), strict=True):
         rows += ytd_rows(f"2024Q{q}", 2024, 3 * q, ytd, 0.6 * ytd)
-    # 2025Q1 and Q2; the 2025Q2 filing restates the 2024 H1 comparative (210 -> 212)
     rows += ytd_rows("2025Q1", 2025, 3, 140, 84) + ytd_rows("2025Q1", 2024, 3, 100, 60)
-    rows += ytd_rows("2025Q2", 2025, 6, 290, 174) + ytd_rows("2025Q2", 2024, 6, 212, 127.2)
+    # the 2025Q2 filing restates its H1-2024 comparative (210 -> 212) and also carries a stray
+    # balance at 30-Jun-2024 (not a balance sheet it presents): it must be ignored
+    rows += ytd_rows("2025Q2", 2025, 6, 290, 174) + ytd_rows("2025Q2", 2024, 6, 212, 127.2, assets=0)
     return pd.DataFrame(rows)
 
 
-def test_latest_keeps_restated_value_and_first_report(facts):
-    lat = latest(facts)
-    h1 = lat[(lat["concept"] == "ifrs-full:Revenue") & (lat["end"] == dt.date(2024, 6, 30))].iloc[0]
-    assert (h1["value"], h1["filing"], h1["first_value"], h1["first_filing"]) == (212, "2025Q2", 210, "2024Q2")
-    assert lat.duplicated(["concept", "start", "end"]).sum() == 0
+def test_as_reported_keeps_own_filing_and_records_revision(facts):
+    rep = as_reported(facts)
+    h1 = rep[(rep["concept"] == "ifrs-full:Revenue") & (rep["end"] == dt.date(2024, 6, 30))].iloc[0]
+    assert (h1["value"], h1["filing"], h1["revised_value"], h1["revised_filing"]) == (210, "2024Q2", 212, "2025Q2")
+    assets = rep[(rep["concept"] == "ifrs-full:Assets") & (rep["end"] == dt.date(2024, 6, 30))]
+    assert assets["value"].tolist() == [1006] and assets["revised_value"].isna().all()  # stray 0 ignored
+    assert rep.duplicated(["concept", "start", "end"]).sum() == 0
 
 
 def test_build_decumulates_quarters_and_ltm(facts):
     periods = {"clc": [Quarter(2024, q) for q in (1, 2, 3, 4)] + [Quarter(2025, 1), Quarter(2025, 2)]}
-    st = statements.build(latest(facts), periods, V).set_index(["period", "variable"])
+    st = statements.build(as_reported(facts), periods, V).set_index(["period", "variable"])
     rev = st.xs("revenue", level="variable")
     assert rev.loc["2024Q4", "ltm"] == 460
-    assert rev.loc["2024Q2", "quarter"] == 112  # restated H1 (212) minus Q1 (100)
+    assert rev.loc["2024Q2", "quarter"] == 110  # as reported, not mixed with the later restatement
     assert rev.loc["2025Q2", "quarter"] == 150
-    assert rev.loc["2025Q2", "ltm"] == 290 + 460 - 212  # uses the restated comparative
+    assert rev.loc["2025Q2", "ltm"] == 290 + 460 - 210
     assert rev.loc["2024Q2", "restated"] and not rev.loc["2024Q1", "restated"]
     cost = st.xs("cost_of_sales", level="variable")
     assert cost.loc["2025Q2", "value"] == 174  # sign normalised
     assert st.loc[("2025Q2", "assets"), "value"] == 1006
     assert math.isnan(rev.loc["2024Q1", "ltm"])  # no 2023 data
-    assert st.loc[("2024Q1", "equity"), "concept"] != st.loc[("2024Q1", "equity"), "concept"]  # missing -> NaN
+    assert pd.isna(st.loc[("2024Q1", "equity"), "concept"])  # not filed -> empty
 
 
 def test_restatements_table(facts):
-    r = statements.restatements(latest(facts), V)
-    assert set(r["concept"]) == {"ifrs-full:Revenue", "ifrs-full:CostOfSales"}
+    r = statements.restatements(as_reported(facts), V)
     pct = r.set_index("concept")["change_pct"]
+    assert set(pct.index) == {"ifrs-full:Revenue", "ifrs-full:CostOfSales"}
     assert pct["ifrs-full:Revenue"] == pytest.approx(2 / 210)
     assert pct["ifrs-full:CostOfSales"] == pytest.approx(-1.2 / 126)  # filed with negative sign
 

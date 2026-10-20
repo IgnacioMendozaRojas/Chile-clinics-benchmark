@@ -8,7 +8,7 @@ builds the canonical statements and indicators, runs the validations and writes:
     statements.csv        issuer x quarter x variable (CLP; balances, YTD, quarter, LTM)
     indicators.csv        issuer x quarter x indicator
     coverage.csv          which quarters each issuer filed
-    restatements.csv      mapped figures whose latest filing differs from the first report
+    restatements.csv      figures that a later filing presents differently (as reported vs revised)
     validation.csv / validation_report.md
 
 Exits with status 1 when any validation error is found, so the workflow does not commit.
@@ -26,7 +26,7 @@ from pathlib import Path
 import pandas as pd
 
 from . import indicators, statements, validate
-from .facts import consolidated_facts, latest
+from .facts import as_reported, consolidated_facts
 from .fetch import Quarter, iter_instances, last_closed_quarter, quarter_range
 from .issuers import load_issuers
 
@@ -48,14 +48,14 @@ def collect(issuers, quarters, pause: float) -> tuple[pd.DataFrame, pd.DataFrame
 
 def build_all(facts: pd.DataFrame, coverage: pd.DataFrame, catalog) -> dict[str, pd.DataFrame]:
     variables = statements.load_variables()
-    lat = latest(facts)
+    reported = as_reported(facts)
     filed = coverage[coverage["status"] == "ok"]
     periods = {k: [Quarter.parse(p) for p in g["period"]] for k, g in filed.groupby("issuer", sort=False)}
-    st = statements.build(lat, periods, variables)
+    st = statements.build(reported, periods, variables)
     ind = indicators.compute(st)
     meta = pd.DataFrame([{"issuer": k, "issuer_type": i.type, "panel": i.panel} for k, i in catalog.items()])
     ind = ind.merge(meta, on="issuer", how="left")
-    rest = statements.restatements(lat, variables)
+    rest = statements.restatements(reported, variables)
     findings = validate.run(st, rest)
     cov = filed.groupby("issuer", sort=False)["period"].agg(quarters="count", first="min", last="max").reset_index()
     return {

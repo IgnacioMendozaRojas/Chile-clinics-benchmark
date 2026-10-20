@@ -42,6 +42,7 @@ jobs:
             git commit -qm "Update data ($(date -u +%F))"
             git push
           fi
+          git push -q origin --delete update-failed 2>/dev/null || true
 
       - name: Keep failed output for review
         if: failure() && steps.build.outcome == 'failure'
