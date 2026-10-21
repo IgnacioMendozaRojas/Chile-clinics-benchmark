@@ -13,45 +13,25 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import io
 import shutil
 import tempfile
 from collections import defaultdict
 from pathlib import Path
-from xml.etree import ElementTree as ET
 
 import pandas as pd
 
-from .facts import consolidated_facts, normalize_concept
+from .facts import consolidated_facts, normalize_concept, parse
 from .fetch import Quarter, iter_instances, last_closed_quarter, quarter_range
 from .issuers import load_issuers
 
-XBRLI = "{http://www.xbrl.org/2003/instance}"
-XBRLDI = "{http://xbrl.org/2006/xbrldi}"
 
-
-def dimension_members(instance: bytes) -> set[tuple[str, str, str]]:
+def dimension_members(parsed: pd.DataFrame) -> set[tuple[str, str, str]]:
     """{(concept, axis, member)} for facts reported with exactly one dimension."""
-    prefixes = {}
-    for _event, (prefix, uri) in ET.iterparse(io.BytesIO(instance), events=("start-ns",)):
-        prefixes.setdefault(uri, prefix or "")
-    root = ET.fromstring(instance)
-    ctx_dims = {}
-    for ctx in root.findall(f"{XBRLI}context"):
-        members = [m for m in ctx.iter() if m.tag in (f"{XBRLDI}explicitMember", f"{XBRLDI}typedMember")]
-        if len(members) == 1:
-            m = members[0]
-            value = (m.text or "").strip() or "".join(x.text or "" for x in m).strip()
-            ctx_dims[ctx.get("id")] = (m.get("dimension") or "", value or "(typed)")
-    out = set()
-    for el in root:
-        dims = ctx_dims.get(el.get("contextRef"))
-        if dims is None or el.get("unitRef") is None:
-            continue
-        ns, local = el.tag[1:].split("}")
-        concept = normalize_concept(f"{prefixes.get(ns, ns)}:{local}")
-        out.add((concept, normalize_concept(dims[0]), normalize_concept(dims[1])))
-    return out
+    one = parsed[parsed["dimensions"] == 1]
+    return {
+        (normalize_concept(c), normalize_concept(m[0][0]), normalize_concept(m[0][1]))
+        for c, m in zip(one["concept"], one["members"], strict=True)
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -74,12 +54,13 @@ def main(argv: list[str] | None = None) -> int:
         for issuer, quarter, _status, instance in iter_instances(issuers, quarters, workdir, args.pause):
             if instance is None:
                 continue
-            facts = consolidated_facts(instance, issuer.key, quarter)
+            parsed = parse(instance)
+            facts = consolidated_facts(parsed, issuer.key, quarter)
             own = facts[facts["end"] == quarter.end]
             for concept, grp in own.groupby("concept"):
                 kind = "instant" if grp["instant"].any() else "duration"
                 concept_rows.append({"issuer": issuer.key, "concept": concept, "kind": kind, "filing": str(quarter)})
-            for concept, axis, member in dimension_members(instance):
+            for concept, axis, member in dimension_members(parsed):
                 dim_counts[(issuer.key, concept, axis, member)].add(str(quarter))
             if quarter.q == 4:
                 ytd = own[own["instant"] | (own["start"] == dt.date(quarter.year, 1, 1))]

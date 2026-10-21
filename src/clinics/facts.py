@@ -33,11 +33,16 @@ def normalize_concept(concept: str) -> str:
     return concept
 
 
-def consolidated_facts(instance: bytes, issuer: str, filing: Quarter) -> pd.DataFrame:
-    """Dimensionless (consolidated, no segment/axis), peso-denominated numeric facts of one filing."""
+def parse(instance: bytes) -> pd.DataFrame:
+    """Every numeric fact of one filing, via the reused eqr parser (with dimension members)."""
     from eqr.data import xbrl
 
-    facts = xbrl.parse_instance(instance)
+    return xbrl.parse_instance(instance)
+
+
+def consolidated_facts(parsed: pd.DataFrame, issuer: str, filing: Quarter) -> pd.DataFrame:
+    """Dimensionless (consolidated, no segment/axis), peso-denominated numeric facts of one filing."""
+    facts = parsed
     f = facts[(facts["dimensions"] == 0) & (facts["unit"].str.upper() == "CLP")].copy()
     f["concept"] = f["concept"].map(normalize_concept)
     f["issuer"] = issuer

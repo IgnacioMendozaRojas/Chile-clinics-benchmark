@@ -1,0 +1,63 @@
+# Notes read from XBRL dimensions (standard CMF note breakdowns, filed by all five issuers).
+#
+# Each note is a set of facts on one axis at the quarter end, taken from the period's own filing.
+#   by: member   the axis members are the breakdown (one concept, e.g. receivables by delinquency bucket)
+#   by: concept  the concepts are the breakdown; the axis members (e.g. supplier type) are summed
+# `items` maps a member (by: member) or a concept (by: concept) to a harmonised item name. Several
+# sources may map to one item; they are added.
+
+notes:
+  receivables_ageing:
+    label: Gross trade receivables by days past due (CMF portfolio stratification note)
+    axis: cl-ci:TramosMorosidadEje
+    by: member
+    concept: cl-ci:CarteraBruta
+    items:
+      cl-ci:AlDiaMiembro: current
+      cl-ci:Entre1Y30DiasMiembro: d001_030
+      cl-ci:Entre31Y60DiasMiembro: d031_060
+      cl-ci:Entre61Y90DiasMiembro: d061_090
+      cl-ci:Entre91Y120DiasMiembro: d091_120
+      cl-ci:Entre121Y150DiasMiembro: d121_150
+      cl-ci:Entre151Y180DiasMiembro: d151_180
+      cl-ci:Entre181Y210DiasMiembro: d181_210
+      cl-ci:Entre211Y250DiasMiembro: d211_250
+      cl-ci:MasDe250DiasMiembro: d250_plus
+    # CLC files only four of these buckets (current, 151-180, 181-210, >250), apparently grouping
+    # its own ranges under the nearest member; indicators therefore use only the robust cuts:
+    # not current, and more than 180 days.
+
+  receivables_allowance:
+    label: Trade and other current receivables before allowance, and the allowance
+    axis: cl-ci:ActivosPorDeudoresComercialesEje
+    by: member
+    concept: ifrs-full:TradeAndOtherCurrentReceivables
+    items:
+      cl-ci:ActivosAntesProvisionesMiembro: gross
+      cl-ci:ProvisionesDeudoresComercialesMiembro: allowance
+
+  payables_current:
+    label: Trade payables not yet due, by days to due date (summed over supplier type)
+    axis: cl-ci:CuentasAlDiaPorTipoProveedorEje
+    by: concept
+    items:
+      cl-ci:CuentasComercialesAlDia: total
+      cl-ci:CuentasComercialesAlDiaHasta30Dias: d000_030
+      cl-ci:CuentasComercialesAlDiaEntre31Y60Dias: d031_060
+      cl-ci:CuentasComercialesAlDiaEntre61Y90Dias: d061_090
+      cl-ci:CuentasComercialesAlDiaEntre91Y120Dias: d091_120
+      cl-ci:CuentasComercialesAlDiaEntre121Y365Dias: d121_365
+      cl-ci:CuentasComercialesAlDiaMasDe365Dias: d365_plus
+
+  payables_overdue:
+    label: Overdue trade payables by days past due (summed over supplier type)
+    axis: cl-ci:CuentasPlazosVencidosPorTipoProveedorEje
+    by: concept
+    items:
+      cl-ci:CuentasComercialesVencidas: total
+      cl-ci:CuentasComercialesVencidasEntre1Y30Dias: d001_030
+      cl-ci:CuentasComercialesVencidasEntre31Y60Dias: d031_060
+      cl-ci:CuentasComercialesVencidasEntre61Y90Dias: d061_090
+      cl-ci:CuentasComercialesVencidasEntre91Y120Dias: d091_120
+      cl-ci:CuentasComercialesVencidasEntre121Y180Dias: d121_180
+      cl-ci:CuentasComercialesVencidasMasDe180Dias: d180_plus
