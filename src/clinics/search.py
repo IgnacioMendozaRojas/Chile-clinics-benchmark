@@ -23,11 +23,17 @@ from .facts import normalize_concept, parse
 from .fetch import Quarter, iter_instances, last_closed_quarter, quarter_range
 from .issuers import load_issuers
 
-MAX_LINES = 70  # per issuer in an annotation
+CHUNK = 3000  # characters per annotation (longer messages are truncated or dropped by GitHub)
+MAX_NOTICES = 9  # GitHub keeps 10 notices per step
+
+
+def _short(name: str) -> str:
+    name = normalize_concept(name).split(":")[-1]
+    return name.replace("Member", "").replace("Axis", "").replace("Miembro", "").replace("Eje", "")
 
 
 def _members(members) -> str:
-    return ",".join(f"{normalize_concept(a).split(':')[-1]}={normalize_concept(m).split(':')[-1]}" for a, m in members)
+    return ",".join(f"{_short(a)}={_short(m)}" for a, m in members)
 
 
 def _kind(start, end, quarter: Quarter) -> str:
@@ -39,7 +45,7 @@ def _kind(start, end, quarter: Quarter) -> str:
     return f"{months}m"
 
 
-def run(issuers, quarters, pattern: re.Pattern, values: set[str], pause: float):
+def run(issuers, quarters, pattern: re.Pattern, values: set[str], pause: float, exclude=None, max_dims: int = 1):
     found = defaultdict(lambda: {"filings": set(), "values": {}})
     workdir = Path(tempfile.mkdtemp(prefix="clinics-search-"))
     try:
@@ -50,7 +56,7 @@ def run(issuers, quarters, pattern: re.Pattern, values: set[str], pause: float):
             f = f[f["end"] == quarter.end]
             for r in f.itertuples(index=False):
                 concept = normalize_concept(r.concept)
-                if not pattern.search(concept):
+                if not pattern.search(concept) or (exclude and exclude.search(concept)) or r.dimensions > max_dims:
                     continue
                 start = None if r.instant else r.start
                 key = (issuer.key, concept, _members(r.members), _kind(start, r.end, quarter))
@@ -82,6 +88,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--periods", nargs="*", help="only these quarters (default: all since --start)")
     p.add_argument("--start", default="2016Q1")
     p.add_argument("--values", nargs="*", default=[], help="quarters whose values are shown")
+    p.add_argument("--exclude", help="regular expression of concepts to drop")
+    p.add_argument("--max-dims", type=int, default=1, help="drop facts with more dimensions than this")
     p.add_argument("--pause", type=float, default=0.5)
     p.add_argument("--annotate", action="store_true", help="also emit one GitHub Actions notice per issuer")
     args = p.parse_args(argv)
@@ -93,15 +101,30 @@ def main(argv: list[str] | None = None) -> int:
     else:
         quarters = quarter_range(Quarter.parse(args.start), last_closed_quarter(dt.date.today()))
     values = list(args.values or (args.periods or []))
-    found = run(issuers, quarters, re.compile(args.pattern), set(values), args.pause)
+    exclude = re.compile(args.exclude) if args.exclude else None
+    found = run(issuers, quarters, re.compile(args.pattern), set(values), args.pause, exclude, args.max_dims)
+    notices = []
     for issuer in issuers:
         text = lines(found, issuer.key, values)
         print(f"## {issuer.short}: {len(text)} matches")
         print("\n".join(text) or "(none)")
         if args.annotate:
-            body = "%0A".join(text[:MAX_LINES]) or "(none)"
-            more = f" (+{len(text) - MAX_LINES} more)" if len(text) > MAX_LINES else ""
-            print(f"::notice title=Search {issuer.short}: {len(text)} matches{more}::{body}", file=sys.stderr)
+            chunks, cur = [], ""
+            for line in text or ["(none)"]:
+                if len(cur) + len(line) + 3 > CHUNK:
+                    chunks.append(cur)
+                    cur = ""
+                cur += ("%0A" if cur else "") + line
+            chunks.append(cur)
+            notices.extend((issuer.short, i + 1, len(chunks), c) for i, c in enumerate(chunks))
+    if args.annotate:
+        for short, i, n, body in notices[:MAX_NOTICES]:
+            print(f"::notice title=Search {short} {i}/{n}::{body}", file=sys.stderr)
+        if len(notices) > MAX_NOTICES:
+            print(
+                f"::warning title=Search truncated::{len(notices) - MAX_NOTICES} more chunks; narrow the pattern",
+                file=sys.stderr,
+            )
     return 0
 
 

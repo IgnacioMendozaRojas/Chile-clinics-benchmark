@@ -22,6 +22,9 @@ on:
       values:
         description: "search: quarters whose values are shown"
         default: "2021Q4 2023Q4 2025Q4"
+      exclude:
+        description: "search: regular expression of concepts to drop"
+        default: ""
 
 permissions:
   contents: write
@@ -43,11 +46,13 @@ jobs:
           ISSUERS: ${{ inputs.issuers }}
           PERIODS: ${{ inputs.periods }}
           VALUES: ${{ inputs.values }}
+          EXCLUDE: ${{ inputs.exclude }}
         run: |
           args=(--pattern "$PATTERN" --annotate)
           [ -n "$ISSUERS" ] && args+=(--issuers $ISSUERS)
           [ -n "$PERIODS" ] && args+=(--periods $PERIODS)
           [ -n "$VALUES" ] && args+=(--values $VALUES)
+          [ -n "$EXCLUDE" ] && args+=(--exclude "$EXCLUDE")
           python -m clinics.search "${args[@]}"
 
   inventory:
