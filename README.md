@@ -70,7 +70,7 @@ All figures as reported to the CMF.
   to −43.1% in mid-2025; before credit losses it was −26.3%. The estimate of CLC's credit losses is a lower bound (it
   does not see write-offs), so at least 17 points of the fall were provisioning and the operating margin was −26% or
   better. By 2026Q2 the gap had narrowed to −13.7% after credit losses and −4.9% before.
-- **Indisa and RedSalud absorbed it.** Their LTM cost of risk stayed between 0.3% and 2.1% of revenue from the end of
+- **Indisa and RedSalud absorbed it.** Their LTM cost of risk stayed between 0.3% and 2.3% of revenue from the end of
   2022 to 2026Q2, and their EBITDA margin before credit losses ended the period at 13.0% and 13.7%. RedSalud broke out
   of none of its 2017–2021 ranges; Indisa's margin and receivables did in 2023 and have recovered since.
 - **Banmédica, which owns an Isapre, moved fastest**: its DSO, margins and liquidity broke out in 2022, and its
