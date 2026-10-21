@@ -1,6 +1,6 @@
 name: Update data
 
-# Rebuilds every table in data/processed from the CMF filings and commits them when they
+# Rebuilds every table in data/processed (and the figures) from the CMF filings and commits them when they
 # change. Twice a month, because issuers file on different dates (and some late); a run
 # with no new or restated filings changes nothing and makes no commit.
 on:
@@ -30,12 +30,16 @@ jobs:
         id: build
         run: python -m clinics.update --out data/processed --annotate
 
+      - name: Regenerate figures
+        if: steps.build.outcome == 'success'
+        run: python -m clinics.figures --data data/processed --out figures
+
       - name: Commit if changed
         if: steps.build.outcome == 'success'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/processed
+          git add data/processed figures
           if git diff --cached --quiet; then
             echo "::notice title=No changes::data/processed is up to date"
           else

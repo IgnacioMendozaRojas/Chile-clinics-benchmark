@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 
 from clinics import notes
@@ -155,3 +156,11 @@ def test_inventory_uses_connector_members():
     members = dimension_members(parse(instance()))
     assert ("cl-ci:CarteraBruta", "cl-ci:TramosMorosidadEje", "cl-ci:AlDiaMiembro", "instant") in members
     assert ("cl-ci:CarteraBruta", "cl-ci:TramosMorosidadEje", "cl-ci:MasDe250DiasMiembro", "duration") in members
+
+
+def test_checks_flag_ageing_bucket_changes(table):
+    later = table[table["note"] == "receivables_ageing"].assign(period="2025Q3")
+    later = later[later["item"] != "d001_030"]
+    found = notes.checks(pd.concat([table, later]))
+    row = found[found["check"] == "ageing_buckets"].iloc[0]
+    assert (row["period"], row["severity"]) == ("2025Q3", "info") and "dropped d001_030" in row["message"]

@@ -13,6 +13,7 @@ authors = [{ name = "Ignacio Mendoza Rojas" }]
 dependencies = [
   # CMF XBRL connector (CmfFilings + parser), pinned to an exact commit for reproducibility
   "equity-research-engine @ git+https://github.com/IgnacioMendozaRojas/equity-research-engine@8f1f55e7786a1a2226e7845ac964d39e1a8c5893",
+  "matplotlib>=3.8",
   "pandas>=2.1",
   "pyyaml>=6",
   "requests>=2.31",

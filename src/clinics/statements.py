@@ -82,6 +82,11 @@ def _restated(row) -> bool:
     return abs(revised - row.value) / max(abs(row.value), 1.0) > RESTATEMENT_TOLERANCE
 
 
+def _revised(row, var: Variable) -> float:
+    """The later filing's figure for this period (balance or year to date) when it was restated."""
+    return _signed(row.revised_value, var) if _restated(row) else math.nan
+
+
 def _ytd(lk: _Lookup, tag: str, q: Quarter):
     return lk.get(tag, dt.date(q.year, 1, 1), q.end)
 
@@ -89,7 +94,8 @@ def _ytd(lk: _Lookup, tag: str, q: Quarter):
 def build(reported: pd.DataFrame, periods: dict[str, list[Quarter]], variables: dict[str, Variable]) -> pd.DataFrame:
     """Long table: issuer, period, variable, kind, value, quarter, ltm, concept, filing, restated.
 
-    `restated` marks figures that a later filing presents differently (see `restatements`).
+    `restated` marks figures that a later filing presents differently; `revised` is that later
+    figure (balance or year to date, same sign convention), NaN otherwise.
     `periods` maps each issuer to the quarters it actually filed (statements are built only there).
     `value` is the balance (stocks) or the year-to-date figure (flows).
     """
@@ -114,6 +120,7 @@ def build(reported: pd.DataFrame, periods: dict[str, list[Quarter]], variables: 
                             "concept": tag,
                             "filing": fact.filing,
                             "restated": _restated(fact),
+                            "revised": _revised(fact, var),
                         }
                     )
                     continue
@@ -147,10 +154,11 @@ def build(reported: pd.DataFrame, periods: dict[str, list[Quarter]], variables: 
                         "concept": tag,
                         "filing": fact.filing,
                         "restated": _restated(fact),
+                        "revised": _revised(fact, var),
                     }
                 )
     cols = ["issuer", "period", "period_end", "variable", "kind", "value", "quarter", "ltm", "concept", "filing"]
-    out = pd.DataFrame(rows).reindex(columns=[*cols, "restated"])
+    out = pd.DataFrame(rows).reindex(columns=[*cols, "restated", "revised"])
     out["restated"] = out["restated"].astype("boolean").fillna(False).astype(bool)
     return out
 

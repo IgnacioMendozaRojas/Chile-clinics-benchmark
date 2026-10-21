@@ -72,6 +72,7 @@ def test_build_decumulates_quarters_and_ltm(facts):
     assert rev.loc["2025Q2", "quarter"] == 150
     assert rev.loc["2025Q2", "ltm"] == 290 + 460 - 210
     assert rev.loc["2024Q2", "restated"] and not rev.loc["2024Q1", "restated"]
+    assert rev.loc["2024Q2", "revised"] == 212 and math.isnan(rev.loc["2024Q1", "revised"])
     cost = st.xs("cost_of_sales", level="variable")
     assert cost.loc["2025Q2", "value"] == 174  # sign normalised
     assert st.loc[("2025Q2", "assets"), "value"] == 1006

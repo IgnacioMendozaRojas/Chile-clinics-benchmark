@@ -204,4 +204,20 @@ def checks(table: pd.DataFrame) -> pd.DataFrame:
                     "not-yet-due payable buckets do not add up to the total",
                     p / total - 1 if total else math.nan,
                 )
+    # definition breaks: the set of ageing buckets an issuer reports changes (e.g. CLC adds 181-210
+    # days in 2023Q1), so shares before and after are not strictly comparable
+    ageing = table[table["note"] == "receivables_ageing"]
+    for issuer, grp in ageing.groupby("issuer", sort=False):
+        sets = grp.groupby("period")["item"].apply(frozenset).sort_index()
+        for (_, before), (period, after) in zip(sets.items(), list(sets.items())[1:], strict=False):
+            if before != after:
+                change = "; ".join(
+                    x
+                    for x in (
+                        "added " + ", ".join(sorted(after - before)) if after - before else "",
+                        "dropped " + ", ".join(sorted(before - after)) if before - after else "",
+                    )
+                    if x
+                )
+                add("info", "ageing_buckets", issuer, period, f"ageing buckets changed ({change})", len(after))
     return pd.DataFrame(rows, columns=["severity", "check", "issuer", "period", "value", "message"])
