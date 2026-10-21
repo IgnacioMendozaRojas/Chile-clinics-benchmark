@@ -49,6 +49,7 @@ info,restated,clc,2021Q4,7.0,"7 figures restated: Assets, CurrentAssets, Current
 info,restated,clc,2022Q1,1.0,1 figures restated: DepreciationAndAmortisationExpense
 info,restated,clc,2022Q2,1.0,1 figures restated: DepreciationAndAmortisationExpense
 info,restated,clc,2022Q4,7.0,"7 figures restated: AdministrativeExpense, CostOfSales, CurrentAssets, DepreciationAndAmortisationExpense, GrossProfit, NoncurrentAssets, TradeAndOtherCurrentPayables"
+info,ageing_buckets,clc,2023Q1,4,ageing buckets changed (added d181_210)
 info,restated,clc,2023Q1,4.0,"4 figures restated: AdministrativeExpense, CostOfSales, DepreciationAndAmortisationExpense, GrossProfit"
 info,restated,clc,2023Q2,4.0,"4 figures restated: AdministrativeExpense, CostOfSales, GrossProfit, PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities"
 info,restated,clc,2023Q3,8.0,"8 figures restated: AdministrativeExpense, CostOfSales, DepreciationAndAmortisationExpense, GrossProfit, IncomeTaxExpenseContinuingOperations, ProfitLoss, ProfitLossAttributableToOwnersOfParent, ProfitLossBeforeTax"

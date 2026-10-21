@@ -1,6 +1,6 @@
 # Validation report
 
-**0 errors, 5 warnings, 92 info.**
+**0 errors, 5 warnings, 93 info.**
 
 ## Coverage
 
@@ -76,6 +76,7 @@
 | restated | clc | 2022Q1 | 1 | 1 figures restated: DepreciationAndAmortisationExpense |
 | restated | clc | 2022Q2 | 1 | 1 figures restated: DepreciationAndAmortisationExpense |
 | restated | clc | 2022Q4 | 7 | 7 figures restated: AdministrativeExpense, CostOfSales, CurrentAssets, DepreciationAndAmortisationExpense, GrossProfit, NoncurrentAssets, TradeAndOtherCurrentPayables |
+| ageing_buckets | clc | 2023Q1 | 0.00 bn | ageing buckets changed (added d181_210) |
 | restated | clc | 2023Q1 | 4 | 4 figures restated: AdministrativeExpense, CostOfSales, DepreciationAndAmortisationExpense, GrossProfit |
 | restated | clc | 2023Q2 | 4 | 4 figures restated: AdministrativeExpense, CostOfSales, GrossProfit, PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities |
 | restated | clc | 2023Q3 | 8 | 8 figures restated: AdministrativeExpense, CostOfSales, DepreciationAndAmortisationExpense, GrossProfit, IncomeTaxExpenseContinuingOperations, ProfitLoss, ProfitLossAttributableToOwnersOfParent, ProfitLossBeforeTax |
