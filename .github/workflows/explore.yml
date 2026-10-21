@@ -1,15 +1,57 @@
 name: Explore XBRL concepts
 
-# Development aid: inventory of the concepts and dimensions each issuer files.
-# Results are force-pushed to the `explore/xbrl-inventory` branch (never to main).
+# Development aid. Two modes:
+#   search     list the concepts matching a pattern, as run annotations (nothing is written)
+#   inventory  full concept inventory, force-pushed to the explore/xbrl-inventory branch
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [search, inventory]
+        default: search
+      pattern:
+        description: "search: regular expression on the concept name"
+        default: "(?i)deterior|impair|incobr|castig|writ|allowance"
+      issuers:
+        description: "search: issuer keys, space separated (empty = all)"
+        default: ""
+      periods:
+        description: "search: only these quarters, space separated (empty = all since 2016Q1)"
+        default: ""
+      values:
+        description: "search: quarters whose values are shown"
+        default: "2021Q4 2023Q4 2025Q4"
 
 permissions:
   contents: write
 
 jobs:
+  search:
+    if: inputs.mode == 'search'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install --no-cache-dir .
+      - name: Search
+        env:
+          PATTERN: ${{ inputs.pattern }}
+          ISSUERS: ${{ inputs.issuers }}
+          PERIODS: ${{ inputs.periods }}
+          VALUES: ${{ inputs.values }}
+        run: |
+          args=(--pattern "$PATTERN" --annotate)
+          [ -n "$ISSUERS" ] && args+=(--issuers $ISSUERS)
+          [ -n "$PERIODS" ] && args+=(--periods $PERIODS)
+          [ -n "$VALUES" ] && args+=(--values $VALUES)
+          python -m clinics.search "${args[@]}"
+
   inventory:
+    if: inputs.mode == 'inventory'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
