@@ -147,6 +147,23 @@ def _fmt(check: str, value: float) -> str:
     return f"{value / 1e9:,.2f} bn"  # peso amounts
 
 
+def gaps(coverage: pd.DataFrame) -> pd.DataFrame:
+    """Error for any quarter not downloaded between an issuer's first and last filed quarter.
+
+    Every issuer files without gaps (checked from 2016Q1), so a hole means a failed download;
+    publishing it would silently drop a quarter.
+    """
+    rows = []
+    for issuer, grp in coverage.groupby("issuer", sort=False):
+        ok = grp.loc[grp["status"] == "ok", "period"]
+        if ok.empty:
+            continue
+        inside = grp[(grp["period"] > ok.min()) & (grp["period"] < ok.max()) & (grp["status"] != "ok")]
+        for r in inside.itertuples(index=False):
+            rows.append(_finding("error", "gap", issuer, r.period, f"filing not downloaded ({r.status})"))
+    return pd.DataFrame(rows, columns=["severity", "check", "issuer", "period", "value", "message"])
+
+
 def report(findings: pd.DataFrame, coverage: pd.DataFrame) -> str:
     """Markdown summary for data/processed/validation_report.md."""
     lines = ["# Validation report", ""]

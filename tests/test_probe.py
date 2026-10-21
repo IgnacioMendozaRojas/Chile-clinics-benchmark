@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from clinics import probe
+from clinics import fetch, probe
 from clinics.issuers import load_issuers
 
 INSTANCE = b"""<?xml version="1.0" encoding="UTF-8"?>
@@ -63,7 +63,8 @@ def test_quarters():
     assert probe.Quarter(2025, 2).end == dt.date(2025, 6, 30)
 
 
-def test_check_quarter_reads_and_deletes_package(tmp_path):
+def test_check_quarter_reads_and_deletes_package(tmp_path, monkeypatch):
+    monkeypatch.setattr(fetch, "RETRY_WAITS", (0, 0))
     issuer = load_issuers()["indisa"]
     fake = FakeFilings(tmp_path, {(2025, 6): _zip(INSTANCE)})
     row = probe.check_quarter(fake, issuer, probe.Quarter(2025, 2))
@@ -92,3 +93,44 @@ def test_summary_and_matrix_flag_gaps():
     assert "●·●!" in probe.matrix(results)
     (notice,) = probe.notices(results, issuers)
     assert notice.startswith("::notice title=XBRL Indisa 2/4::2025Q1=xbrl, 2025Q2=missing")
+
+
+class FlakyFilings(FakeFilings):
+    """Fails the first `fail` calls, then serves the package."""
+
+    def __init__(self, cache, packages, fail):
+        super().__init__(cache, packages)
+        self.fail, self.calls = fail, 0
+
+    def package(self, rut, year, month):
+        self.calls += 1
+        if self.calls <= self.fail:
+            raise LookupError("transient")
+        return super().package(rut, year, month)
+
+
+def test_download_retries_transient_failures(tmp_path, monkeypatch):
+    monkeypatch.setattr(fetch, "RETRY_WAITS", (0, 0))
+    issuer = load_issuers()["bupa"]
+    flaky = FlakyFilings(tmp_path, {(2016, 6): _zip(INSTANCE)}, fail=2)
+    status, data, _ = fetch.download(flaky, issuer, probe.Quarter(2016, 2))
+    assert status == "ok" and data and flaky.calls == 3
+    gone = FlakyFilings(tmp_path, {}, fail=0)
+    assert fetch.download(gone, issuer, probe.Quarter(2016, 2))[0] == "missing" and gone.calls == 3
+    assert not list(tmp_path.iterdir())
+
+
+def test_deregistered_issuers_are_not_requested_after_last_filing(tmp_path, monkeypatch):
+    monkeypatch.setattr(fetch, "RETRY_WAITS", ())
+    calls = []
+
+    class Recorder(FakeFilings):
+        def package(self, rut, year, month):
+            calls.append((year, month))
+            raise LookupError
+
+    monkeypatch.setattr(fetch, "filings_for", lambda issuer, workdir: Recorder(tmp_path, {}))
+    bupa = load_issuers()["bupa"]
+    quarters = fetch.quarter_range(probe.Quarter(2021, 4), probe.Quarter(2022, 3))
+    list(fetch.iter_instances([bupa], quarters, tmp_path, pause=0))
+    assert calls == [(2021, 12), (2022, 3)]

@@ -153,3 +153,15 @@ def test_report_formats_values_by_check():
     text = validate.report(findings, cov)
     assert "| balance | clc | 2025Q2 | 1.00% | x |" in text
     assert "| restated | clc | 2024Q4 | 5 | y |" in text
+
+
+def test_gaps_inside_coverage_are_errors():
+    cov = pd.DataFrame(
+        {
+            "issuer": ["bupa"] * 4 + ["clc"] * 2,
+            "period": ["2016Q1", "2016Q2", "2016Q3", "2016Q4", "2026Q2", "2026Q3"],
+            "status": ["ok", "missing", "ok", "missing", "ok", "missing"],
+        }
+    )
+    g = validate.gaps(cov)
+    assert g[["issuer", "period", "severity"]].values.tolist() == [["bupa", "2016Q2", "error"]]

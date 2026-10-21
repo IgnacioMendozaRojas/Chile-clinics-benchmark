@@ -23,6 +23,7 @@ class Issuer:
     cmf_status: str
     panel: str
     notes: str = ""
+    last_filing: str | None = None  # e.g. "2024Q2" for issuers that no longer file
 
     @property
     def rut_label(self) -> str:

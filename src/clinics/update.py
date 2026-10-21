@@ -64,7 +64,7 @@ def build_all(
     meta = pd.DataFrame([{"issuer": k, "issuer_type": i.type, "panel": i.panel} for k, i in catalog.items()])
     ind = ind.merge(meta, on="issuer", how="left")
     rest = statements.restatements(reported, variables)
-    findings = pd.concat([validate.run(st, rest), notes.checks(note_table)], ignore_index=True)
+    findings = pd.concat([validate.run(st, rest), notes.checks(note_table), validate.gaps(coverage)], ignore_index=True)
     findings = findings.sort_values(["severity", "issuer", "period", "check"]).reset_index(drop=True)
     cov = filed.groupby("issuer", sort=False)["period"].agg(quarters="count", first="min", last="max").reset_index()
     return {

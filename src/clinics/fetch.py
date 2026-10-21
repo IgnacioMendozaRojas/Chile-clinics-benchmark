@@ -71,19 +71,32 @@ def filings_for(issuer: Issuer, workdir: Path):
     return filings
 
 
-def download(filings, issuer: Issuer, quarter: Quarter) -> tuple[str, bytes | None, int]:
-    """(status, package bytes or None, size in bytes). Never raises; deletes the cached file."""
-    try:
-        data = filings.package(issuer.rut, quarter.year, quarter.month)
-        status = "ok"
-    except (LookupError, FileNotFoundError):
-        data, status = None, "missing"
-    except Exception as err:  # network or HTTP error: report, keep going
-        data, status = None, f"error: {type(err).__name__}"
-    finally:
-        cached = filings._cached(issuer.rut, quarter.year, quarter.month)
-        size = cached.stat().st_size if cached.exists() else 0
-        cached.unlink(missing_ok=True)
+RETRY_WAITS = (3, 10)  # seconds before the 2nd and 3rd attempt
+
+
+def download(filings, issuer: Issuer, quarter: Quarter, waits=None) -> tuple[str, bytes | None, int]:
+    """(status, package bytes or None, size in bytes). Never raises; deletes the cached file.
+
+    The CMF site occasionally fails to serve a package that exists, so a missing or failed
+    download is retried before being reported.
+    """
+    waits = RETRY_WAITS if waits is None else waits
+    status, data = "missing", None
+    for attempt in range(len(waits) + 1):
+        if attempt:
+            time.sleep(waits[attempt - 1])
+        try:
+            data = filings.package(issuer.rut, quarter.year, quarter.month)
+            status = "ok"
+        except (LookupError, FileNotFoundError):
+            data, status = None, "missing"
+        except Exception as err:  # network or HTTP error: report, keep going
+            data, status = None, f"error: {type(err).__name__}"
+        if data is not None:
+            break
+    cached = filings._cached(issuer.rut, quarter.year, quarter.month)
+    size = cached.stat().st_size if cached.exists() else 0
+    cached.unlink(missing_ok=True)
     return status, data, size
 
 
@@ -95,7 +108,10 @@ def iter_instances(
 
     for issuer in issuers:
         filings = filings_for(issuer, workdir)
+        last = Quarter.parse(issuer.last_filing) if issuer.last_filing else None
         for quarter in quarters:
+            if last and quarter > last:
+                continue  # issuer no longer files
             status, data, _ = download(filings, issuer, quarter)
             instance = None
             if data is not None:

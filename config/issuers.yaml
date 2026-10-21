@@ -7,6 +7,7 @@
 # cmf_status    VI (vigente) or NV (no vigente) in the CMF securities registry; selects the
 #               entity page used to list filings
 # panel         core = post-crisis comparison set; historical = series ends with deregistration
+# last_filing   for issuers that stopped filing: quarters after it are not requested
 # notes         context that the README and the coverage matrix must surface
 
 issuers:
@@ -49,6 +50,7 @@ issuers:
     type: integrated
     cmf_status: NV
     panel: historical
+    last_filing: 2024Q2
     notes: Shares delisted in 2020; all bonds redeemed on 5-Sep-2024. XBRL available 2016Q1-2024Q2 (probe, Oct-2026).
 
   bupa:
@@ -59,4 +61,5 @@ issuers:
     type: integrated
     cmf_status: NV
     panel: historical
+    last_filing: 2022Q1
     notes: Listed as "No Vigente" in the CMF registry. XBRL available 2016Q1-2022Q1 (probe, Oct-2026).
