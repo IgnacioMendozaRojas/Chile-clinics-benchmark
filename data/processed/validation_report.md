@@ -1,6 +1,6 @@
 # Validation report
 
-**0 errors, 5 warnings, 90 info.**
+**0 errors, 5 warnings, 91 info.**
 
 ## Coverage
 
@@ -46,6 +46,7 @@
 | restated | bupa | 2016Q1 | 3 | 3 figures restated: CashFlowsFromUsedInOperatingActivities, FinanceCosts, PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities |
 | restated | bupa | 2016Q3 | 3 | 3 figures restated: CashFlowsFromUsedInOperatingActivities, DepreciationAndAmortisationExpense, FinanceCosts |
 | restated | bupa | 2016Q4 | 5 | 5 figures restated: CurrentLiabilities, DepreciationAndAmortisationExpense, Equity, EquityAttributableToOwnersOfParent, Liabilities |
+| restated | bupa | 2017Q2 | 2 | 2 figures restated: CashFlowsFromUsedInOperatingActivities, PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities |
 | restated | bupa | 2017Q3 | 2 | 2 figures restated: CashFlowsFromUsedInOperatingActivities, PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities |
 | restated | bupa | 2017Q4 | 10 | 10 figures restated: Assets, CashFlowsFromUsedInOperatingActivities, CurrentAssets, CurrentLiabilities, DepreciationAndAmortisationExpense, EquityAndLiabilities, Liabilities, PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities, TradeAndOtherCurrentPayables, TradeAndOtherCurrentReceivables |
 | restated | bupa | 2018Q1 | 2 | 2 figures restated: CashFlowsFromUsedInOperatingActivities, PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities |
