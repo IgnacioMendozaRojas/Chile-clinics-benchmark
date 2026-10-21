@@ -1,7 +1,8 @@
 """Notes from XBRL dimensions: receivables ageing, allowance for credit losses, overdue payables.
 
-Facts come from the period's own filing (quarter-end balance), on one axis only (facts that
-combine the axis with another breakdown are skipped). See `config/notes.yaml`.
+Facts come from the period's own filing (balance at the quarter end, whether tagged as an instant
+or as a year-to-date period ending then), on one axis only (facts that combine the axis with
+another breakdown are skipped). See `config/notes.yaml`.
 
 Indicators (all shares of the same note's total, so they compare across issuers regardless
 of how each defines the receivables portfolio):
@@ -16,6 +17,7 @@ of how each defines the receivables portfolio):
 
 from __future__ import annotations
 
+import datetime as dt
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -80,7 +82,10 @@ def note_facts_empty() -> pd.DataFrame:
 def note_facts(parsed: pd.DataFrame, issuer: str, filing: Quarter, notes: dict[str, Note]) -> pd.DataFrame:
     """Single-axis facts at the filing's quarter end on any configured note axis."""
     axes = {n.axis for n in notes.values()}
-    f = parsed[(parsed["dimensions"] == 1) & parsed["instant"] & (parsed["end"] == filing.end)]
+    # balances at the quarter end; some notes (e.g. the portfolio stratification) are tagged with a
+    # year-to-date period ending at the quarter end instead of an instant: accept both, instants first
+    own = (parsed["end"] == filing.end) & (parsed["instant"] | (parsed["start"] == dt.date(filing.year, 1, 1)))
+    f = parsed[(parsed["dimensions"] == 1) & own].sort_values("instant", ascending=False, kind="stable")
     rows = []
     for r in f.itertuples(index=False):
         ((axis, member),) = r.members

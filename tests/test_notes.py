@@ -7,14 +7,23 @@ from clinics.inventory import dimension_members
 
 CTX = """<xbrli:context id="{id}"><xbrli:entity><xbrli:identifier scheme="http://www.cmfchile.cl">92051000</xbrli:identifier>
 <xbrli:segment><xbrldi:explicitMember dimension="{axis}">{member}</xbrldi:explicitMember></xbrli:segment></xbrli:entity>
-<xbrli:period><xbrli:instant>{date}</xbrli:instant></xbrli:period></xbrli:context>"""
+<xbrli:period>{period}</xbrli:period></xbrli:context>"""
+
+
+def period(date: str) -> str:
+    # "YTD:2025-06-30" -> a duration from 1 January (how the stratification note is tagged)
+    if date.startswith("YTD:"):
+        end = date[4:]
+        return f"<xbrli:startDate>{end[:4]}-01-01</xbrli:startDate><xbrli:endDate>{end}</xbrli:endDate>"
+    return f"<xbrli:instant>{date}</xbrli:instant>"
+
 
 FACTS = [
     # (axis, member, concept, value, date)
     ("cl-ci:TramosMorosidadEje", "cl-ci:AlDiaMiembro", "cl-ci:CarteraBruta", 60, "2025-06-30"),
     ("cl-ci:TramosMorosidadEje", "cl-ci:Entre1Y30DiasMiembro", "cl-ci:CarteraBruta", 15, "2025-06-30"),
     ("cl-ci:TramosMorosidadEje", "cl-ci:Entre181Y210DiasMiembro", "cl-ci:CarteraBruta", 10, "2025-06-30"),
-    ("cl-ci:TramosMorosidadEje", "cl-ci:MasDe250DiasMiembro", "cl-ci:CarteraBruta", 15, "2025-06-30"),
+    ("cl-ci:TramosMorosidadEje", "cl-ci:MasDe250DiasMiembro", "cl-ci:CarteraBruta", 15, "YTD:2025-06-30"),
     ("cl-ci:TramosMorosidadEje", "cl-ci:AlDiaMiembro", "cl-ci:CarteraBruta", 999, "2024-12-31"),  # comparative
     (
         "cl-ci:ActivosPorDeudoresComercialesEje",
@@ -84,7 +93,7 @@ FACTS = [
 
 
 def instance() -> bytes:
-    ctx = "".join(CTX.format(id=f"c{i}", axis=a, member=m, date=d) for i, (a, m, _, _, d) in enumerate(FACTS))
+    ctx = "".join(CTX.format(id=f"c{i}", axis=a, member=m, period=period(d)) for i, (a, m, _, _, d) in enumerate(FACTS))
     facts = "".join(f'<{c} contextRef="c{i}" unitRef="CLP">{v}</{c}>' for i, (_, _, c, v, _) in enumerate(FACTS))
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <xbrli:xbrl xmlns:xbrli="http://www.xbrl.org/2003/instance" xmlns:xbrldi="http://xbrl.org/2006/xbrldi"
@@ -144,4 +153,5 @@ def test_checks_flag_inconsistent_buckets(table):
 
 def test_inventory_uses_connector_members():
     members = dimension_members(parse(instance()))
-    assert ("cl-ci:CarteraBruta", "cl-ci:TramosMorosidadEje", "cl-ci:AlDiaMiembro") in members
+    assert ("cl-ci:CarteraBruta", "cl-ci:TramosMorosidadEje", "cl-ci:AlDiaMiembro", "instant") in members
+    assert ("cl-ci:CarteraBruta", "cl-ci:TramosMorosidadEje", "cl-ci:MasDe250DiasMiembro", "duration") in members

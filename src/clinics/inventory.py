@@ -25,12 +25,12 @@ from .fetch import Quarter, iter_instances, last_closed_quarter, quarter_range
 from .issuers import load_issuers
 
 
-def dimension_members(parsed: pd.DataFrame) -> set[tuple[str, str, str]]:
-    """{(concept, axis, member)} for facts reported with exactly one dimension."""
+def dimension_members(parsed: pd.DataFrame) -> set[tuple[str, str, str, str]]:
+    """{(concept, axis, member, kind)} for facts reported with exactly one dimension (kind: instant/duration)."""
     one = parsed[parsed["dimensions"] == 1]
     return {
-        (normalize_concept(c), normalize_concept(m[0][0]), normalize_concept(m[0][1]))
-        for c, m in zip(one["concept"], one["members"], strict=True)
+        (normalize_concept(c), normalize_concept(m[0][0]), normalize_concept(m[0][1]), "instant" if i else "duration")
+        for c, m, i in zip(one["concept"], one["members"], one["instant"], strict=True)
     }
 
 
@@ -60,8 +60,8 @@ def main(argv: list[str] | None = None) -> int:
             for concept, grp in own.groupby("concept"):
                 kind = "instant" if grp["instant"].any() else "duration"
                 concept_rows.append({"issuer": issuer.key, "concept": concept, "kind": kind, "filing": str(quarter)})
-            for concept, axis, member in dimension_members(parsed):
-                dim_counts[(issuer.key, concept, axis, member)].add(str(quarter))
+            for concept, axis, member, kind in dimension_members(parsed):
+                dim_counts[(issuer.key, concept, axis, member, kind)].add(str(quarter))
             if quarter.q == 4:
                 ytd = own[own["instant"] | (own["start"] == dt.date(quarter.year, 1, 1))]
                 decembers[issuer.key][str(quarter)] = ytd[["concept", "instant", "value"]]
@@ -78,8 +78,8 @@ def main(argv: list[str] | None = None) -> int:
     concepts.to_csv(args.out / "concepts.csv", index=False)
     dims = pd.DataFrame(
         [
-            {"issuer": i, "concept": c_, "axis": a, "member": m, "n_filings": len(f), "last_filing": max(f)}
-            for (i, c_, a, m), f in dim_counts.items()
+            {"issuer": i, "concept": c_, "axis": a, "member": m, "kind": k, "n_filings": len(f), "last_filing": max(f)}
+            for (i, c_, a, m, k), f in dim_counts.items()
         ]
     ).sort_values(["issuer", "axis", "concept", "member"])
     dims.to_csv(args.out / "dimensions.csv", index=False)

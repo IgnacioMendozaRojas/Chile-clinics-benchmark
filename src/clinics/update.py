@@ -116,6 +116,13 @@ def main(argv: list[str] | None = None) -> int:
     print(summary)
     if args.annotate:
         print(f"::notice title=Validation::{summary}", file=sys.stderr)
+        nt = tables["notes"]
+        for name in notes.load_notes():
+            q = nt[nt["note"] == name].groupby("issuer")["period"].nunique().to_dict()
+            print(
+                f"::notice title=Note {name}::" + (", ".join(f"{k}={n}" for k, n in q.items()) or "no data"),
+                file=sys.stderr,
+            )
         for r in v[v["severity"] == "error"].head(10).itertuples(index=False):
             print(f"::error title={r.check} {r.issuer} {r.period}::{r.message}", file=sys.stderr)
     return 1 if counts.get("error", 0) else 0
