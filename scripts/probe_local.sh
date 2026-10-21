@@ -5,13 +5,13 @@
 # directory that is deleted on exit, even after an error or Ctrl-C. pip runs
 # without a cache. The only output is the table printed to the terminal.
 #
-#   bash <(curl -fsSL https://raw.githubusercontent.com/IgnacioMendozaRojas/Chile-clinics-benchmark/main/scripts/probe_local.sh)
+#   bash <(curl -fsSL https://raw.githubusercontent.com/IgnacioMendozaRojas/chile-clinics-benchmark/main/scripts/probe_local.sh)
 #   bash <(curl -fsSL .../probe_local.sh) --quick
 #
 # Arguments are passed through to `python -m clinics.probe` (see --help).
 set -euo pipefail
 
-REPO="https://github.com/IgnacioMendozaRojas/Chile-clinics-benchmark.git"
+REPO="https://github.com/IgnacioMendozaRojas/chile-clinics-benchmark.git"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/clinics-probe.XXXXXX")"
 cleanup() { rm -rf "$WORK"; echo "Cleaned up $WORK" >&2; }
 trap cleanup EXIT INT TERM

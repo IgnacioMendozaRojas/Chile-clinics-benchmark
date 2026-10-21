@@ -249,7 +249,7 @@ def plot(indicators: pd.DataFrame, revised: pd.DataFrame, name: str, out: Path, 
         fontsize=8,
         labelcolor=INK_2,
     )
-    source = "Source: CMF XBRL filings, as reported. github.com/IgnacioMendozaRojas/Chile-clinics-benchmark"
+    source = "Source: CMF XBRL filings, as reported. github.com/IgnacioMendozaRojas/chile-clinics-benchmark"
     fig.text(0.07, 0.01, (footnote + "\n" if footnote else "") + source, fontsize=7, color=INK_2, ha="left")
     fig.subplots_adjust(left=0.07, right=0.97, top=0.82, bottom=0.22 if footnote else 0.2)
     path = out / f"{name}.png"
