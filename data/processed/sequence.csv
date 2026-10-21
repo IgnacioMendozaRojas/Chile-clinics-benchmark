@@ -1,0 +1,36 @@
+issuer,indicator,label,direction,baseline_quarters,baseline_low,baseline_high,first_break,value_at_break,quarters_from_ruling,note
+banmedica,allowance_coverage,Allowance coverage,up,20,0.228697,0.28288,2023Q2,0.309244,2,
+banmedica,cost_of_risk,Cost of risk,up,20,0,0.0167472,2023Q2,0.021169,2,
+banmedica,current_ratio,Current ratio,down,20,0.768351,1.086,2022Q2,0.756274,-2,
+banmedica,dso,Days sales outstanding,up,20,47.1108,60.2483,2022Q1,61.6588,-3,
+banmedica,ebitda_before_credit_losses_margin,EBITDA margin before credit losses,down,20,0.0465183,0.111908,2022Q1,0.0391479,-3,
+banmedica,ebitda_margin,EBITDA margin,down,20,0.0428825,0.107892,2022Q1,0.0364741,-3,
+banmedica,receivables_over_180_share,Receivables > 180 days,up,20,0.274123,0.393812,2023Q3,0.399849,3,
+bupa,allowance_coverage,Allowance coverage,up,20,0.0624379,0.180012,,,,too few quarters after 2021
+bupa,cost_of_risk,Cost of risk,up,20,0,0.010547,,,,too few quarters after 2021
+bupa,current_ratio,Current ratio,down,20,0.662552,0.88793,,,,too few quarters after 2021
+bupa,dso,Days sales outstanding,up,20,44.6555,64.0327,,,,too few quarters after 2021
+bupa,ebitda_before_credit_losses_margin,EBITDA margin before credit losses,down,20,0.038212,0.0655217,,,,too few quarters after 2021
+bupa,ebitda_margin,EBITDA margin,down,20,0.0322073,0.0649409,,,,too few quarters after 2021
+bupa,receivables_over_180_share,Receivables > 180 days,up,16,0.216451,0.327274,,,,too few quarters after 2021
+clc,allowance_coverage,Allowance coverage,up,20,0.062789,0.184482,2024Q3,0.201447,7,
+clc,cost_of_risk,Cost of risk,up,19,0,0.0586498,2024Q4,0.155238,8,
+clc,current_ratio,Current ratio,down,20,1.09353,2.5478,2024Q4,0.899787,8,
+clc,dso,Days sales outstanding,up,20,138.039,230.804,2022Q1,239.377,-3,
+clc,ebitda_before_credit_losses_margin,EBITDA margin before credit losses,down,19,0.0371381,0.263154,2024Q4,0.000369657,8,
+clc,ebitda_margin,EBITDA margin,down,20,0.0286318,0.252062,2024Q4,-0.154869,8,
+clc,receivables_over_180_share,Receivables > 180 days,up,9,0.103119,0.437206,2023Q1,0.657879,1,
+indisa,allowance_coverage,Allowance coverage,up,20,0.130369,0.174207,2024Q1,0.179731,5,
+indisa,cost_of_risk,Cost of risk,up,20,0,0.0215895,,,,no break
+indisa,current_ratio,Current ratio,down,20,0.899119,1.67279,,,,no break
+indisa,dso,Days sales outstanding,up,20,109.319,142.529,2022Q2,146.466,-2,
+indisa,ebitda_before_credit_losses_margin,EBITDA margin before credit losses,down,20,0.097532,0.178283,2023Q1,0.0842549,1,
+indisa,ebitda_margin,EBITDA margin,down,20,0.086131,0.166355,2023Q1,0.063958,1,
+indisa,receivables_over_180_share,Receivables > 180 days,up,20,0.101958,0.30173,2023Q2,0.315727,2,
+redsalud,allowance_coverage,Allowance coverage,up,20,0.0980444,0.340567,,,,no break
+redsalud,cost_of_risk,Cost of risk,up,20,0,0.0898954,,,,no break
+redsalud,current_ratio,Current ratio,down,20,0.798084,1.26208,,,,no break
+redsalud,dso,Days sales outstanding,up,20,71.8285,92.6215,,,,no break
+redsalud,ebitda_before_credit_losses_margin,EBITDA margin before credit losses,down,20,0.0569592,0.187453,,,,no break
+redsalud,ebitda_margin,EBITDA margin,down,20,0.0569592,0.146949,,,,no break
+redsalud,receivables_over_180_share,Receivables > 180 days,up,20,0.319637,0.416606,,,,no break

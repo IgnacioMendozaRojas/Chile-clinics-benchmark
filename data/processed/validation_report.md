@@ -1,6 +1,6 @@
 # Validation report
 
-**0 errors, 5 warnings, 93 info.**
+**0 errors, 0 warnings, 5 explained, 101 info.**
 
 ## Coverage
 
@@ -12,15 +12,15 @@
 | banmedica | 34 | 2016Q1 | 2024Q2 |
 | bupa | 25 | 2016Q1 | 2022Q1 |
 
-## Warnings
+## Explained
 
-| Check | Issuer | Period | Value | Detail |
-|---|---|---|---|---|
-| jump_assets | clc | 2020Q2 | 36.36% | total assets moved > 30% q/q |
-| jump_revenue | clc | 2021Q2 | 65.52% | quarterly revenue moved > 50% y/y |
-| jump_revenue | indisa | 2021Q2 | 71.76% | quarterly revenue moved > 50% y/y |
-| jump_assets | indisa | 2025Q4 | 35.01% | total assets moved > 30% q/q |
-| jump_revenue | redsalud | 2021Q2 | 101.90% | quarterly revenue moved > 50% y/y |
+| Check | Issuer | Period | Value | Explanation | Source |
+|---|---|---|---|---|---|
+| jump_assets | clc | 2020Q2 | 36.36% | Revaluation of land and buildings: property, plant and equipment rose by CLP 156.7 bn (land 105.3 bn, buildings 51.4 bn) with additions of only 6.3 bn; issued capital was unchanged at 86.0 bn, so this is not a capital increase. | CLC interim financial statements at 30-Jun-2020, PP&E note (XBRL RevaluationIncreaseDecreasePropertyPlantAndEquipment, IssuedCapital). |
+| jump_revenue | clc | 2021Q2 | 65.52% | Base effect of COVID-19 in 2020Q2, when elective activity was suspended. | CLC quarterly revenue 2020Q2 vs 2021Q2 (statements.csv). |
+| jump_revenue | indisa | 2021Q2 | 71.76% | Base effect of COVID-19 in 2020Q2, when elective activity was suspended. | Indisa quarterly revenue 2020Q2 vs 2021Q2 (statements.csv). |
+| jump_assets | indisa | 2025Q4 | 35.01% | Revaluation of land and buildings: CLP 91.9 bn (land 50.6 bn, buildings 41.4 bn), recognised in other comprehensive income (100.6 bn before 24.8 bn of deferred tax), which explains most of the 85 bn rise in equity. The quarter's depreciation and amortisation (10.9 bn, against about 2.2 bn in other quarters) reflects 8.7 bn of amortisation of intangible assets in the fourth quarter; depreciation of PP&E was normal (2.2 bn). EBITDA adds both back. | Indisa financial statements at 31-Dec-2025, PP&E and intangible assets notes (XBRL RevaluationIncreaseDecreasePropertyPlantAndEquipment, OtherComprehensiveIncomeBeforeTaxGainsLossesOnRevaluation, AmortisationIntangibleAssetsOtherThanGoodwill, DepreciationPropertyPlantAndEquipment). |
+| jump_revenue | redsalud | 2021Q2 | 101.90% | Base effect of COVID-19 in 2020Q2, when elective activity was suspended. | RedSalud quarterly revenue 2020Q2 vs 2021Q2 (statements.csv). |
 
 ## Infos
 
@@ -107,15 +107,23 @@
 | restated | indisa | 2024Q3 | 1 | 1 figures restated: CashFlowsFromUsedInOperatingActivities |
 | restated | indisa | 2024Q4 | 1 | 1 figures restated: CashFlowsFromUsedInOperatingActivities |
 | restated | redsalud | 2016Q1 | 9 | 9 figures restated: AdministrativeExpense, CostOfSales, DepreciationAndAmortisationExpense, FinanceCosts, FinanceIncome, GrossProfit, ProfitLoss, ProfitLossBeforeTax, Revenue |
-| restated | redsalud | 2016Q2 | 8 | 8 figures restated: AdministrativeExpense, CostOfSales, DepreciationAndAmortisationExpense, FinanceCosts, FinanceIncome, GrossProfit, IncomeTaxExpenseContinuingOperations, Revenue |
+| restated | redsalud | 2016Q2 | 9 | 9 figures restated: AdministrativeExpense, CastigosDelPeriodo, CostOfSales, DepreciationAndAmortisationExpense, FinanceCosts, FinanceIncome, GrossProfit, IncomeTaxExpenseContinuingOperations, Revenue |
+| restated | redsalud | 2016Q3 | 1 | 1 figures restated: CastigosDelPeriodo |
 | restated | redsalud | 2016Q4 | 3 | 3 figures restated: CurrentAssets, NoncurrentAssets, TradeAndOtherCurrentReceivables |
+| restated | redsalud | 2017Q1 | 1 | 1 figures restated: CastigosDelPeriodo |
 | restated | redsalud | 2017Q3 | 1 | 1 figures restated: DepreciationAndAmortisationExpense |
 | restated | redsalud | 2018Q3 | 1 | 1 figures restated: DepreciationAndAmortisationExpense |
 | restated | redsalud | 2019Q4 | 12 | 12 figures restated: AdministrativeExpense, Assets, CostOfSales, CurrentAssets, CurrentLeaseLiabilities, EquityAndLiabilities, GrossProfit, Liabilities, NoncurrentAssets, NoncurrentLeaseLiabilities, OtherCurrentFinancialLiabilities, OtherNoncurrentFinancialLiabilities |
 | restated | redsalud | 2020Q4 | 2 | 2 figures restated: OtherCurrentFinancialLiabilities, OtherNoncurrentFinancialLiabilities |
 | restated | redsalud | 2021Q3 | 1 | 1 figures restated: CashFlowsFromUsedInOperatingActivities |
 | restated | redsalud | 2021Q4 | 8 | 8 figures restated: Assets, CurrentAssets, CurrentLiabilities, EquityAndLiabilities, Liabilities, OtherCurrentFinancialLiabilities, OtherNoncurrentFinancialLiabilities, PropertyPlantAndEquipment |
-| restated | redsalud | 2023Q1 | 1 | 1 figures restated: CashFlowsFromUsedInOperatingActivities |
-| restated | redsalud | 2023Q2 | 1 | 1 figures restated: CashFlowsFromUsedInOperatingActivities |
-| restated | redsalud | 2024Q3 | 1 | 1 figures restated: CashFlowsFromUsedInOperatingActivities |
-| restated | redsalud | 2024Q4 | 6 | 6 figures restated: CashAndCashEquivalents, CashFlowsFromUsedInOperatingActivities, CurrentAssets, CurrentLiabilities, TradeAndOtherCurrentPayables, TradeAndOtherCurrentReceivables |
+| restated | redsalud | 2022Q1 | 1 | 1 figures restated: CastigosDelPeriodo |
+| restated | redsalud | 2022Q2 | 1 | 1 figures restated: CastigosDelPeriodo |
+| restated | redsalud | 2022Q3 | 1 | 1 figures restated: CastigosDelPeriodo |
+| restated | redsalud | 2023Q1 | 2 | 2 figures restated: CashFlowsFromUsedInOperatingActivities, CastigosDelPeriodo |
+| restated | redsalud | 2023Q2 | 2 | 2 figures restated: CashFlowsFromUsedInOperatingActivities, CastigosDelPeriodo |
+| restated | redsalud | 2023Q3 | 1 | 1 figures restated: CastigosDelPeriodo |
+| restated | redsalud | 2024Q1 | 1 | 1 figures restated: CastigosDelPeriodo |
+| restated | redsalud | 2024Q2 | 1 | 1 figures restated: CastigosDelPeriodo |
+| restated | redsalud | 2024Q3 | 2 | 2 figures restated: CashFlowsFromUsedInOperatingActivities, CastigosDelPeriodo |
+| restated | redsalud | 2024Q4 | 7 | 7 figures restated: CashAndCashEquivalents, CashFlowsFromUsedInOperatingActivities, CastigosDelPeriodo, CurrentAssets, CurrentLiabilities, TradeAndOtherCurrentPayables, TradeAndOtherCurrentReceivables |

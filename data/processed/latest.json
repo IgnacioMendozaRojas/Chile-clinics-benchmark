@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "id": "clinics-isapre-crisis",
+  "repo": "chile-clinics-benchmark",
+  "title": "Chilean private clinics through the Isapre crisis",
+  "question": "How hard did Chile's Isapre crisis hit the private clinic operators that report to the CMF, and did it show up first in receivables, impairments or liquidity?",
+  "as_of": "2026Q2",
+  "frequency": "quarterly",
+  "updated": "2026-10-21",
+  "source": "CMF XBRL filings: financial statements and notes (as reported)",
+  "headline": "In 2026Q2, CLC's allowance covered 48% of its gross trade receivables (at most 18% in 2017–2021); LTM cost of risk was 8.7% at CLC, 1.7% at Indisa and 2.0% at RedSalud.",
+  "figure": "figures/allowance_coverage.png",
+  "metrics": [
+    {
+      "id": "clc_allowance_coverage",
+      "label": "CLC: Allowance for credit losses / gross trade receivables",
+      "value": 0.4812,
+      "unit": "share",
+      "period": "2026Q2",
+      "previous": 0.5224,
+      "change": -0.0412,
+      "change_type": "points"
+    },
+    {
+      "id": "clc_receivables_over_180_share",
+      "label": "CLC: Gross trade receivables more than 180 days past due",
+      "value": 0.5943,
+      "unit": "share",
+      "period": "2026Q2",
+      "previous": 0.5726,
+      "change": 0.0217,
+      "change_type": "points"
+    },
+    {
+      "id": "clc_cost_of_risk",
+      "label": "CLC: Cost of risk (credit losses / revenue, LTM)",
+      "value": 0.0871,
+      "unit": "share",
+      "period": "2026Q2",
+      "previous": 0.0944,
+      "change": -0.0073,
+      "change_type": "points"
+    },
+    {
+      "id": "clc_ebitda_before_credit_losses_margin",
+      "label": "CLC: EBITDA margin before credit losses, LTM",
+      "value": -0.0494,
+      "unit": "share",
+      "period": "2026Q2",
+      "previous": -0.1011,
+      "change": 0.0518,
+      "change_type": "points"
+    },
+    {
+      "id": "indisa_allowance_coverage",
+      "label": "Indisa: Allowance for credit losses / gross trade receivables",
+      "value": 0.1622,
+      "unit": "share",
+      "period": "2026Q2",
+      "previous": 0.1812,
+      "change": -0.0189,
+      "change_type": "points"
+    },
+    {
+      "id": "indisa_receivables_over_180_share",
+      "label": "Indisa: Gross trade receivables more than 180 days past due",
+      "value": 0.2612,
+      "unit": "share",
+      "period": "2026Q2",
+      "previous": 0.3391,
+      "change": -0.0779,
+      "change_type": "points"
+    },
+    {
+      "id": "indisa_cost_of_risk",
+      "label": "Indisa: Cost of risk (credit losses / revenue, LTM)",
+      "value": 0.0173,
+      "unit": "share",
+      "period": "2026Q2",
+      "previous": 0.0171,
+      "change": 0.0002,
+      "change_type": "points"
+    },
+    {
+      "id": "indisa_ebitda_before_credit_losses_margin",
+      "label": "Indisa: EBITDA margin before credit losses, LTM",
+      "value": 0.1299,
+      "unit": "share",
+      "period": "2026Q2",
+      "previous": 0.1295,
+      "change": 0.0004,
+      "change_type": "points"
+    },
+    {
+      "id": "redsalud_allowance_coverage",
+      "label": "RedSalud: Allowance for credit losses / gross trade receivables",
+      "value": 0.1934,
+      "unit": "share",
+      "period": "2026Q2",
+      "previous": 0.1855,
+      "change": 0.0078,
+      "change_type": "points"
+    },
+    {
+      "id": "redsalud_receivables_over_180_share",
+      "label": "RedSalud: Gross trade receivables more than 180 days past due",
+      "value": 0.3755,
+      "unit": "share",
+      "period": "2026Q2",
+      "previous": 0.3406,
+      "change": 0.0349,
+      "change_type": "points"
+    },
+    {
+      "id": "redsalud_cost_of_risk",
+      "label": "RedSalud: Cost of risk (credit losses / revenue, LTM)",
+      "value": 0.02,
+      "unit": "share",
+      "period": "2026Q2",
+      "previous": 0.0179,
+      "change": 0.0021,
+      "change_type": "points"
+    },
+    {
+      "id": "redsalud_ebitda_before_credit_losses_margin",
+      "label": "RedSalud: EBITDA margin before credit losses, LTM",
+      "value": 0.1367,
+      "unit": "share",
+      "period": "2026Q2",
+      "previous": 0.1377,
+      "change": -0.0011,
+      "change_type": "points"
+    }
+  ]
+}

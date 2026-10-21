@@ -8,6 +8,24 @@ in 2023, as a strategy and investment analyst in the sector. This repository reb
 sources only, and keeps it current without manual work.
 
 <!-- latest:start -->
+**Latest reading: 2026Q2.** In 2026Q2, CLC's allowance covered 48% of its gross trade receivables (at most 18% in 2017–2021); LTM cost of risk was 8.7% at CLC, 1.7% at Indisa and 2.0% at RedSalud.
+
+| Indicator | Latest | Quarter before | Change | Note |
+|---|---:|---:|---:|---|
+| CLC: Allowance for credit losses / gross trade receivables | 48.1% | 52.2% | -4.1 pp |  |
+| CLC: Gross trade receivables more than 180 days past due | 59.4% | 57.3% | +2.2 pp |  |
+| CLC: Cost of risk (credit losses / revenue, LTM) | 8.7% | 9.4% | -0.7 pp |  |
+| CLC: EBITDA margin before credit losses, LTM | -4.9% | -10.1% | +5.2 pp |  |
+| Indisa: Allowance for credit losses / gross trade receivables | 16.2% | 18.1% | -1.9 pp |  |
+| Indisa: Gross trade receivables more than 180 days past due | 26.1% | 33.9% | -7.8 pp |  |
+| Indisa: Cost of risk (credit losses / revenue, LTM) | 1.7% | 1.7% | +0.0 pp |  |
+| Indisa: EBITDA margin before credit losses, LTM | 13.0% | 13.0% | +0.0 pp |  |
+| RedSalud: Allowance for credit losses / gross trade receivables | 19.3% | 18.6% | +0.8 pp |  |
+| RedSalud: Gross trade receivables more than 180 days past due | 37.5% | 34.1% | +3.5 pp |  |
+| RedSalud: Cost of risk (credit losses / revenue, LTM) | 2.0% | 1.8% | +0.2 pp |  |
+| RedSalud: EBITDA margin before credit losses, LTM | 13.7% | 13.8% | -0.1 pp |  |
+
+*Updated automatically on 2026-10-21 from the CMF filings. pp = percentage points. Cost of risk is estimated from the allowance roll-forward except where the issuer files the IFRS 9 line (see Method). A note gives the quarter when an issuer lags the others.*
 <!-- latest:end -->
 
 ## Before vs after
