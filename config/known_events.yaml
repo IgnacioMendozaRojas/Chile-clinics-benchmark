@@ -1,0 +1,49 @@
+# Validation findings with a known cause. A finding matching issuer, period and check is
+# reported as "explained" (its own section of the validation report) instead of a warning.
+# An entry that no longer matches any finding is reported, so this file cannot go stale.
+#
+# source: the filing and the XBRL facts that confirm the explanation.
+
+events:
+  - issuer: clc
+    period: 2020Q2
+    check: jump_assets
+    explanation: >
+      Revaluation of land and buildings: property, plant and equipment rose by CLP 156.7 bn
+      (land 105.3 bn, buildings 51.4 bn) with additions of only 6.3 bn; issued capital was
+      unchanged at 86.0 bn, so this is not a capital increase.
+    source: >
+      CLC interim financial statements at 30-Jun-2020, PP&E note (XBRL
+      RevaluationIncreaseDecreasePropertyPlantAndEquipment, IssuedCapital).
+
+  - issuer: indisa
+    period: 2025Q4
+    check: jump_assets
+    explanation: >
+      Revaluation of land and buildings: CLP 91.9 bn (land 50.6 bn, buildings 41.4 bn), recognised
+      in other comprehensive income (100.6 bn before 24.8 bn of deferred tax), which explains most
+      of the 85 bn rise in equity. The quarter's depreciation and amortisation (10.9 bn, against
+      about 2.2 bn in other quarters) reflects 8.7 bn of amortisation of intangible assets in the
+      fourth quarter; depreciation of PP&E was normal (2.2 bn). EBITDA adds both back.
+    source: >
+      Indisa financial statements at 31-Dec-2025, PP&E and intangible assets notes (XBRL
+      RevaluationIncreaseDecreasePropertyPlantAndEquipment, OtherComprehensiveIncomeBeforeTaxGainsLossesOnRevaluation,
+      AmortisationIntangibleAssetsOtherThanGoodwill, DepreciationPropertyPlantAndEquipment).
+
+  - issuer: clc
+    period: 2021Q2
+    check: jump_revenue
+    explanation: Base effect of COVID-19 in 2020Q2, when elective activity was suspended.
+    source: CLC quarterly revenue 2020Q2 vs 2021Q2 (statements.csv).
+
+  - issuer: indisa
+    period: 2021Q2
+    check: jump_revenue
+    explanation: Base effect of COVID-19 in 2020Q2, when elective activity was suspended.
+    source: Indisa quarterly revenue 2020Q2 vs 2021Q2 (statements.csv).
+
+  - issuer: redsalud
+    period: 2021Q2
+    check: jump_revenue
+    explanation: Base effect of COVID-19 in 2020Q2, when elective activity was suspended.
+    source: RedSalud quarterly revenue 2020Q2 vs 2021Q2 (statements.csv).

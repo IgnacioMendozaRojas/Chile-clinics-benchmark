@@ -156,3 +156,11 @@ variables:
     label: Purchases of property, plant and equipment
     sign: expense
     tags: [ifrs-full:PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities]
+
+  # ---- credit-loss proxy inputs ---------------------------------------------
+  receivable_write_offs:
+    kind: flow
+    label: Trade receivables written off (CMF portfolio note)
+    # filed by RedSalud only (24 of its 42 filings); used in the credit-loss proxy
+    sign: expense
+    tags: [cl-ci:CastigosDelPeriodo]

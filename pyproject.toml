@@ -36,6 +36,7 @@ packages = ["src/clinics"]
 "config/issuers.yaml" = "clinics/_config/issuers.yaml"
 "config/concepts.yaml" = "clinics/_config/concepts.yaml"
 "config/notes.yaml" = "clinics/_config/notes.yaml"
+"config/known_events.yaml" = "clinics/_config/known_events.yaml"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -3,12 +3,14 @@
 Severity:
 * error   — the data cannot be trusted; the update workflow does not commit
 * warning — published, but listed in the report for review
+* explained — a warning with a known cause recorded in config/known_events.yaml
 * info    — logged context (e.g. restated figures)
 """
 
 from __future__ import annotations
 
 import math
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -164,17 +166,71 @@ def gaps(coverage: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=["severity", "check", "issuer", "period", "value", "message"])
 
 
+EVENTS = Path(__file__).resolve().parents[2] / "config" / "known_events.yaml"
+if not EVENTS.exists():  # installed wheel
+    EVENTS = Path(__file__).resolve().parent / "_config" / "known_events.yaml"
+
+
+def load_events(path: Path = EVENTS) -> list[dict]:
+    import yaml
+
+    return yaml.safe_load(Path(path).read_text(encoding="utf-8")).get("events") or []
+
+
+def explain(findings: pd.DataFrame, events: list[dict]) -> pd.DataFrame:
+    """Mark findings with a known cause as `explained`; report events that match nothing."""
+    f = findings.copy()
+    f["explanation"], f["source"] = "", ""
+    for e in events:
+        hit = (f["issuer"] == e["issuer"]) & (f["period"] == str(e["period"])) & (f["check"] == e["check"])
+        hit &= f["severity"] == "warning"
+        if hit.any():
+            f.loc[hit, "severity"] = "explained"
+            f.loc[hit, "explanation"] = " ".join(str(e["explanation"]).split())
+            f.loc[hit, "source"] = " ".join(str(e.get("source", "")).split())
+        else:
+            f.loc[len(f)] = {
+                "severity": "info",
+                "check": "stale_event",
+                "issuer": e["issuer"],
+                "period": str(e["period"]),
+                "value": math.nan,
+                "message": f"known event for '{e['check']}' matches no finding",
+                "explanation": "",
+                "source": "",
+            }
+    order = {"error": 0, "warning": 1, "explained": 2, "info": 3}
+    f = f.sort_values(
+        ["severity", "issuer", "period", "check"], key=lambda c: c.map(order) if c.name == "severity" else c
+    )
+    return f.reset_index(drop=True)
+
+
 def report(findings: pd.DataFrame, coverage: pd.DataFrame) -> str:
     """Markdown summary for data/processed/validation_report.md."""
     lines = ["# Validation report", ""]
     counts = findings["severity"].value_counts()
     lines.append(
-        f"**{counts.get('error', 0)} errors, {counts.get('warning', 0)} warnings, {counts.get('info', 0)} info.**"
+        f"**{counts.get('error', 0)} errors, {counts.get('warning', 0)} warnings, "
+        f"{counts.get('explained', 0)} explained, {counts.get('info', 0)} info.**"
     )
     lines += ["", "## Coverage", "", "| Issuer | Quarters | First | Last |", "|---|---|---|---|"]
     for r in coverage.itertuples(index=False):
         lines.append(f"| {r.issuer} | {r.quarters} | {r.first} | {r.last} |")
+    explained = findings[findings["severity"] == "explained"]
     for severity in ("error", "warning", "info"):
+        if severity == "info" and not explained.empty:
+            lines += [
+                "",
+                "## Explained",
+                "",
+                "| Check | Issuer | Period | Value | Explanation | Source |",
+                "|---|---|---|---|---|---|",
+            ]
+            for r in explained.itertuples(index=False):
+                lines.append(
+                    f"| {r.check} | {r.issuer} | {r.period} | {_fmt(r.check, r.value)} | {r.explanation} | {r.source} |"
+                )
         f = findings[findings["severity"] == severity]
         if f.empty:
             continue

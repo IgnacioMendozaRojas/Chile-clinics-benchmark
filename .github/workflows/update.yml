@@ -1,8 +1,8 @@
 name: Update data
 
-# Rebuilds every table in data/processed (and the figures) from the CMF filings and commits them when they
-# change. Twice a month, because issuers file on different dates (and some late); a run
-# with no new or restated filings changes nothing and makes no commit.
+# Rebuilds every table in data/processed, the figures, latest.json and the README's latest reading
+# from the CMF filings, and commits them when they change. Twice a month, because issuers file on
+# different dates (and some late); a run with no new or restated filings commits nothing.
 on:
   schedule:
     - cron: "17 9 1,16 * *"
@@ -34,12 +34,16 @@ jobs:
         if: steps.build.outcome == 'success'
         run: python -m clinics.figures --data data/processed --out figures
 
+      - name: Latest reading (latest.json and README block)
+        if: steps.build.outcome == 'success'
+        run: python -m clinics.build --data data/processed --readme README.md
+
       - name: Commit if changed
         if: steps.build.outcome == 'success'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/processed figures
+          git add data/processed figures README.md
           if git diff --cached --quiet; then
             echo "::notice title=No changes::data/processed is up to date"
           else

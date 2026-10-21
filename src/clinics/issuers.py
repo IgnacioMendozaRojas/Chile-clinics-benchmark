@@ -24,6 +24,7 @@ class Issuer:
     panel: str
     notes: str = ""
     last_filing: str | None = None  # e.g. "2024Q2" for issuers that no longer file
+    credit_losses: str = "allowance"  # face | allowance
 
     @property
     def rut_label(self) -> str:

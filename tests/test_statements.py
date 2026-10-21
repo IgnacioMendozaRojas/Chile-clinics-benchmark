@@ -117,7 +117,6 @@ def test_indicators_definitions():
     assert got["dso"] == pytest.approx(250 / 1000 * 365)
     assert got["revenue_growth"] == pytest.approx(0.10)
     assert got["roe"] == pytest.approx(66 / ((550 + 500) / 2))
-    assert "credit_loss_ratio" not in got  # line not filed: not reported as zero
 
 
 def test_validation_flags_unbalanced_sheet():

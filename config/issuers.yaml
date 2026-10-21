@@ -8,6 +8,8 @@
 #               entity page used to list filings
 # panel         core = post-crisis comparison set; historical = series ends with deregistration
 # last_filing   for issuers that stopped filing: quarters after it are not requested
+# credit_losses face = use the IFRS 9 credit-loss line of the income statement where filed;
+#               default (allowance) = proxy from the allowance roll-forward (see indicators)
 # notes         context that the README and the coverage matrix must surface
 
 issuers:
@@ -20,8 +22,9 @@ issuers:
     cmf_status: VI
     panel: core
     notes: >
-      FY2025 statements filed late (trading suspended Apr-2026) and restated;
-      change of control to Euroamerica in 2026. Keep the latest filed figures per period.
+      FY2025 statements filed late (trading suspended Apr-2026); its December 2025 filing restated
+      December 2024. Figures stay as reported; the restatement is logged in restatements.csv.
+      Change of control to Euroamerica in 2026.
 
   indisa:
     name: Instituto de Diagnóstico S.A.
@@ -31,6 +34,7 @@ issuers:
     type: provider
     cmf_status: VI
     panel: core
+    credit_losses: face  # IFRS 9 line filed from 2019Q4; earlier quarters use the allowance proxy
 
   redsalud:
     name: Empresas Red Salud S.A.
@@ -40,7 +44,6 @@ issuers:
     type: provider
     cmf_status: VI
     panel: core
-    notes: Regional clinics ("Clínicas Regionales") reported as a sub-entity where the MD&A breaks them out.
 
   banmedica:
     name: Banmédica S.A.

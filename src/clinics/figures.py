@@ -65,6 +65,22 @@ FIGURES = {
         "pct",
         False,
     ),
+    "cost_of_risk": (
+        "cost_of_risk",
+        "Cost of risk",
+        "Credit losses / revenue, LTM. Indisa: IFRS 9 line of its income statement; others: allowance roll-forward",
+        "pct",
+        False,
+        "Allowance roll-forward = change in the allowance over four quarters + write-offs (RedSalud only); "
+        "without write-offs it is a lower bound.",
+    ),
+    "ebitda_before_credit_losses": (
+        "ebitda_before_credit_losses_margin",
+        "EBITDA margin before credit losses, LTM",
+        "(EBITDA + credit losses) / revenue: the operating margin with provisioning taken out",
+        "pct",
+        False,
+    ),
     "current_ratio": (
         "current_ratio",
         "Liquidity: current ratio",
@@ -258,6 +274,104 @@ def plot(indicators: pd.DataFrame, revised: pd.DataFrame, name: str, out: Path, 
     return path
 
 
+def plot_sequence(seq: pd.DataFrame, out: Path, issuers) -> Path:
+    """One panel per issuer: the quarter each indicator first left its 2017-2021 range."""
+    from .sequence import INDICATORS, SEARCH_FROM
+
+    keys = [k for k in issuers if not seq[(seq["issuer"] == k) & seq["first_break"].notna()].empty]
+    labels = [v[0] for v in INDICATORS.values()]
+    periods = sorted(seq["first_break"].dropna())
+    last = max(periods) if periods else SEARCH_FROM
+    x0, x1 = _order(SEARCH_FROM), _order(last)
+    fig, axes = plt.subplots(len(keys), 1, figsize=(9, 1.0 + 1.75 * len(keys)), dpi=150, sharex=True)
+    axes = [axes] if len(keys) == 1 else list(axes)
+    fig.patch.set_facecolor(SURFACE)
+    for ax, key in zip(axes, keys, strict=True):
+        _style(ax)
+        ax.grid(axis="x", color=GRID, linewidth=0.8)
+        ax.grid(axis="y", visible=False)
+        s = seq[seq["issuer"] == key].set_index("indicator")
+        for y, ind in enumerate(INDICATORS):
+            if ind not in s.index:
+                continue
+            r = s.loc[ind]
+            if pd.notna(r["first_break"]):
+                xb = _order(r["first_break"])
+                short = "short" in str(r["note"])
+                ax.scatter(
+                    [xb],
+                    [y],
+                    s=60,
+                    color=COLORS[key],
+                    edgecolors=SURFACE,
+                    linewidths=1.5,
+                    zorder=3,
+                    marker="o" if not short else "D",
+                )
+                ax.text(xb + 0.35, y, r["first_break"] + (" *" if short else ""), fontsize=7.5, color=INK, va="center")
+            else:
+                ax.text(
+                    x0 - 0.5,
+                    y,
+                    "no break" if "no break" in str(r["note"]) else "no data",
+                    fontsize=7.5,
+                    color=INK_2,
+                    va="center",
+                    ha="left",
+                    style="italic",
+                )
+        for period in EVENTS:
+            ax.axvline(_order(period), color=INK_2, linewidth=1, linestyle=":", zorder=1)
+        ax.set_yticks(range(len(labels)), labels, fontsize=8)
+        ax.set_ylim(len(labels) - 0.5, -0.5)
+        ax.set_title(
+            issuers[key].short + (" (integrated)" if issuers[key].type == "integrated" else ""),
+            fontsize=9.5,
+            color=INK,
+            loc="left",
+            weight="bold",
+        )
+    years = range(int(SEARCH_FROM[:4]), int(last[:4]) + 2)
+    axes[-1].set_xticks([y * 4 for y in years], [str(y) for y in years])
+    axes[-1].set_xlim(x0 - 1, x1 + 3)
+    for period, (text, side) in EVENTS.items():
+        axes[0].text(
+            _order(period) + (-0.3 if side == "left" else 0.3),
+            1.02,
+            text,
+            color=INK_2,
+            fontsize=7.5,
+            ha="right" if side == "left" else "left",
+            va="bottom",
+            transform=axes[0].get_xaxis_transform(),
+        )
+    fig.text(0.02, 0.995, "What moved first", fontsize=13, color=INK, weight="bold", ha="left", va="top")
+    fig.text(
+        0.02,
+        0.965,
+        "First quarter from 2022 in which each indicator left its 2017–2021 range in the adverse "
+        "direction, for two consecutive quarters. * short pre-crisis baseline.",
+        fontsize=8,
+        color=INK_2,
+        ha="left",
+        va="top",
+    )
+    fig.text(
+        0.02,
+        0.005,
+        "Source: CMF XBRL filings, as reported. github.com/IgnacioMendozaRojas/chile-clinics-benchmark",
+        fontsize=7,
+        color=INK_2,
+        ha="left",
+        va="bottom",
+    )
+    fig.subplots_adjust(left=0.27, right=0.97, top=0.9, bottom=0.06, hspace=0.45)
+    path = out / "sequence.png"
+    fig.savefig(path, facecolor=SURFACE, metadata={"Software": None})
+    plt.close(fig)
+    return path
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--data", type=Path, default=Path("data/processed"))
@@ -270,6 +384,8 @@ def main(argv: list[str] | None = None) -> int:
     issuers = load_issuers()
     for name in FIGURES:
         print(plot(indicators, revised, name, args.out, issuers))
+    if (args.data / "sequence.csv").exists():
+        print(plot_sequence(pd.read_csv(args.data / "sequence.csv"), args.out, issuers))
     return 0
 
 

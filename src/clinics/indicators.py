@@ -58,7 +58,6 @@ INDICATORS = {
     "current_debt_share": ("Leverage", "Current share of financial debt", "%"),
     "dso": ("Working capital", "Days sales outstanding (trade and other receivables)", "days"),
     "dpo": ("Working capital", "Days payables outstanding (trade and other payables)", "days"),
-    "credit_loss_ratio": ("Working capital", "Credit losses / revenue", "%"),
     "capex_ratio": ("Investment", "Capex (PP&E purchases) / revenue", "%"),
 }
 
@@ -94,6 +93,13 @@ def _div(a: pd.Series, b: pd.Series) -> pd.Series:
     return a / b.where(b.abs() > 0)
 
 
+def ebitda(w: pd.DataFrame) -> pd.Series:
+    """EBITDA (LTM when `w` comes from `_wide`): EBIT as defined above plus depreciation and amortisation."""
+    c = lambda name: _col(w, name)  # noqa: E731
+    ebit = c("gross_profit") - c("distribution_costs") - c("administrative_expense") - c("impairment_credit_losses")
+    return ebit + c("depreciation_amortisation")
+
+
 def compute(statements: pd.DataFrame) -> pd.DataFrame:
     """Long table: issuer, period, indicator, value."""
     w = _wide(statements)
@@ -101,7 +107,7 @@ def compute(statements: pd.DataFrame) -> pd.DataFrame:
 
     revenue = c("revenue")
     ebit = c("gross_profit") - c("distribution_costs") - c("administrative_expense") - c("impairment_credit_losses")
-    ebitda = ebit + c("depreciation_amortisation")
+    eb = ebitda(w)
     current_debt = c("other_financial_liabilities_current") + c("lease_liabilities_current")
     gross_debt = current_debt + c("other_financial_liabilities_noncurrent") + c("lease_liabilities_noncurrent")
     net_debt = gross_debt - c("cash")
@@ -112,7 +118,7 @@ def compute(statements: pd.DataFrame) -> pd.DataFrame:
         "revenue_growth": _div(revenue, _lag(revenue)) - 1,
         "gross_margin": _div(c("gross_profit"), revenue),
         "ebit_margin": _div(ebit, revenue),
-        "ebitda_margin": _div(ebitda, revenue),
+        "ebitda_margin": _div(eb, revenue),
         "net_margin": _div(c("profit_loss"), revenue),
         "roe": _div(c("profit_loss"), _avg(equity)),
         "roa": _div(c("profit_loss"), _avg(c("assets"))),
@@ -124,14 +130,11 @@ def compute(statements: pd.DataFrame) -> pd.DataFrame:
         "cash_to_current_debt": _div(c("cash"), current_debt),
         "cfo_margin": _div(c("operating_cash_flow"), revenue),
         "liabilities_to_equity": _div(c("liabilities"), equity),
-        "net_debt_to_ebitda": _div(net_debt, ebitda.where(ebitda > 0)),
-        "interest_coverage": _div(ebitda, c("finance_costs")),
+        "net_debt_to_ebitda": _div(net_debt, eb.where(eb > 0)),
+        "interest_coverage": _div(eb, c("finance_costs")),
         "current_debt_share": _div(current_debt, gross_debt),
         "dso": _div(c("trade_receivables_current"), revenue) * 365,
         "dpo": _div(c("trade_payables_current"), c("cost_of_sales")) * 365,
-        "credit_loss_ratio": _div(c("impairment_credit_losses"), revenue).where(
-            w.get("impairment_credit_losses", pd.Series(np.nan, index=w.index)).notna()
-        ),
         "capex_ratio": _div(c("capex"), revenue),
     }
     frame = pd.DataFrame(out, index=w.index).replace([np.inf, -np.inf], np.nan)

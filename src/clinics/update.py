@@ -7,6 +7,8 @@ builds the canonical statements and indicators, runs the validations and writes:
 
     statements.csv        issuer x quarter x variable (CLP; balances, YTD, quarter, LTM)
     notes.csv             issuer x quarter x note item (receivables ageing, allowance, payables)
+    credit_losses.csv     credit-loss charge per issuer and quarter, with the method used
+    sequence.csv          first quarter each indicator left its 2017-2021 range
     indicators.csv        issuer x quarter x indicator
     coverage.csv          which quarters each issuer filed
     restatements.csv      figures that a later filing presents differently (as reported vs revised)
@@ -26,7 +28,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import indicators, notes, statements, validate
+from . import credit, indicators, notes, sequence, statements, validate
 from .facts import as_reported, consolidated_facts, parse
 from .fetch import Quarter, iter_instances, last_closed_quarter, quarter_range
 from .issuers import load_issuers
@@ -60,16 +62,20 @@ def build_all(
     periods = {k: [Quarter.parse(p) for p in g["period"]] for k, g in filed.groupby("issuer", sort=False)}
     st = statements.build(reported, periods, variables)
     note_table = notes.build(note_facts, notes.load_notes())
-    ind = pd.concat([indicators.compute(st), notes.compute_indicators(note_table)], ignore_index=True)
+    credit_ind, credit_detail = credit.compute(st, note_table, catalog)
+    ind = pd.concat([indicators.compute(st), notes.compute_indicators(note_table), credit_ind], ignore_index=True)
     meta = pd.DataFrame([{"issuer": k, "issuer_type": i.type, "panel": i.panel} for k, i in catalog.items()])
     ind = ind.merge(meta, on="issuer", how="left")
     rest = statements.restatements(reported, variables)
     findings = pd.concat([validate.run(st, rest), notes.checks(note_table), validate.gaps(coverage)], ignore_index=True)
-    findings = findings.sort_values(["severity", "issuer", "period", "check"]).reset_index(drop=True)
+    findings = validate.explain(findings, validate.load_events())
+    seq = sequence.breaks(ind)
     cov = filed.groupby("issuer", sort=False)["period"].agg(quarters="count", first="min", last="max").reset_index()
     return {
         "statements": st,
         "notes": note_table,
+        "credit_losses": credit_detail,
+        "sequence": seq,
         "indicators": ind,
         "coverage": coverage,
         "coverage_summary": cov,
@@ -82,6 +88,8 @@ def write(tables: dict[str, pd.DataFrame], out: Path) -> None:
     out.mkdir(parents=True, exist_ok=True)
     tables["statements"].to_csv(out / "statements.csv", index=False, float_format="%.0f")
     tables["notes"].to_csv(out / "notes.csv", index=False, float_format="%.0f")
+    tables["credit_losses"].to_csv(out / "credit_losses.csv", index=False, float_format="%.6g")
+    tables["sequence"].to_csv(out / "sequence.csv", index=False, float_format="%.6g")
     tables["indicators"].to_csv(out / "indicators.csv", index=False, float_format="%.6g")
     tables["coverage"].to_csv(out / "coverage.csv", index=False)
     tables["restatements"].to_csv(out / "restatements.csv", index=False, float_format="%.6g")
@@ -112,7 +120,10 @@ def main(argv: list[str] | None = None) -> int:
 
     v = tables["validation"]
     counts = v["severity"].value_counts()
-    summary = f"{counts.get('error', 0)} errors, {counts.get('warning', 0)} warnings, {counts.get('info', 0)} info"
+    summary = (
+        f"{counts.get('error', 0)} errors, {counts.get('warning', 0)} warnings, "
+        f"{counts.get('explained', 0)} explained, {counts.get('info', 0)} info"
+    )
     print(summary)
     if args.annotate:
         print(f"::notice title=Validation::{summary}", file=sys.stderr)

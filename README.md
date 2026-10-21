@@ -7,6 +7,9 @@ A self-updating benchmark of Chilean private clinic groups, rebuilt entirely fro
 in 2023, as a strategy and investment analyst in the sector. This repository rebuilds it from scratch, from public
 sources only, and keeps it current without manual work.
 
+<!-- latest:start -->
+<!-- latest:end -->
+
 ## Before vs after
 
 | | 2023, by hand | Now |
