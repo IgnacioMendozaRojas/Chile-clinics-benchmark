@@ -32,7 +32,7 @@ jobs:
 
       - name: Regenerate figures
         if: steps.build.outcome == 'success'
-        run: python -m clinics.figures --data data/processed --out figures
+        run: python -m clinics.figures --data data/processed --out docs/figures
 
       - name: Latest reading (latest.json and README block)
         if: steps.build.outcome == 'success'
@@ -43,7 +43,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/processed figures README.md
+          git add data/processed docs/figures README.md
           if git diff --cached --quiet; then
             echo "::notice title=No changes::data/processed is up to date"
           else

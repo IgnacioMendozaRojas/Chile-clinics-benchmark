@@ -1,11 +1,36 @@
 # Chile Clinics Industry Benchmark
 
-**How hard did Chile's Isapre crisis hit the private clinic operators that report to the CMF — and did it show up first in receivables, impairments or liquidity?**
+[![CI](https://github.com/IgnacioMendozaRojas/chile-clinics-benchmark/actions/workflows/ci.yml/badge.svg)](https://github.com/IgnacioMendozaRojas/chile-clinics-benchmark/actions/workflows/ci.yml)
+[![Update data](https://github.com/IgnacioMendozaRojas/chile-clinics-benchmark/actions/workflows/update.yml/badge.svg)](https://github.com/IgnacioMendozaRojas/chile-clinics-benchmark/actions/workflows/update.yml)
 
-A self-updating benchmark of Chilean private clinic groups, rebuilt entirely from public filings at the
-[CMF](https://www.cmfchile.cl) (Comisión para el Mercado Financiero). I first built this benchmark by hand in Excel
-in 2023, as a strategy and investment analyst in the sector. This repository rebuilds it from scratch, from public
-sources only, and keeps it current without manual work.
+**Credit risk and financial statement analysis.** A self-updating benchmark of the Chilean private clinic groups that report to the [CMF](https://www.cmfchile.cl), rebuilt from their quarterly XBRL filings to answer one question: how hard did the Isapre crisis hit them, and did it show up first in receivables, provisions or liquidity?
+
+> In 2023, as Strategy & Investment Analyst at Red Interclínica, I built this benchmark by hand in Excel (competitive benchmarking of Chilean clinic groups). This repository rebuilds it from public CMF filings and keeps it current. No data or templates from that job.
+
+## Results
+
+- **Clínica Las Condes (CLC) quadrupled its provisions.** Its allowance for credit losses rose from 12.6% of gross trade receivables in 2022Q4 to 53.8% in 2025Q4 (at most 18% in 2017–2021).
+- **CLC restated its own balance sheet.** Its 2025Q4 filing restated December 2024: trade receivables from CLP 85.2 bn to 26.0 bn and equity from 204.1 bn to 136.6 bn.
+- **Indisa and RedSalud absorbed it.** Over 2022Q4–2026Q2 their LTM cost of risk stayed between 0.3% and 2.3% of revenue (CLC peaked at 21.4% in 2025Q3), and in 2026Q2 their EBITDA margin before credit losses was 13.0% and 13.7%.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/allowance_coverage-dark.png">
+  <img alt="Allowance for credit losses as a share of gross trade receivables, 2016–2026: CLC rose from 12.6% in 2022Q4 to 53.8% in 2025Q4 while Indisa and RedSalud stayed near 15–20%" src="docs/figures/allowance_coverage-light.png">
+</picture>
+
+## What this shows
+
+| Task in a credit-risk or investment team | Where it is done here |
+|---|---|
+| Measure portfolio quality of a counterparty: ageing, allowance coverage, cost of risk | Receivables notes read from XBRL dimensions ([`notes.py`](src/clinics/notes.py)), cost of risk from the IFRS 9 line or the allowance roll-forward ([`credit.py`](src/clinics/credit.py)) |
+| Catch restatements instead of silently mixing bases | Every figure as reported; later comparatives logged in [`restatements.csv`](data/processed/restatements.csv) and drawn next to the original |
+| Compare peers on the same definitions | One concept map for five issuers ([`config/concepts.yaml`](config/concepts.yaml)), providers and integrated groups flagged |
+| Early warning: which indicator breaks first | First quarter outside the 2017–2021 range, per issuer and indicator ([`sequence.py`](src/clinics/sequence.py)) |
+| Separate credit losses from operating performance | EBITDA margin before and after credit losses, in one chart |
+| Explain jumps rather than ignore them | Revaluations and base effects documented with their filing in [`config/known_events.yaml`](config/known_events.yaml) |
+| Keep the analysis current without manual work | [`update.yml`](.github/workflows/update.yml) downloads new filings twice a month, validates them, redraws the figures and the reading below |
+
+## Latest reading
 
 <!-- latest:start -->
 **Latest reading: 2026Q2.** In 2026Q2, CLC's allowance covered 48% of its gross trade receivables (at most 18% in 2017–2021); LTM cost of risk was 8.7% at CLC, 1.7% at Indisa and 2.0% at RedSalud.
@@ -28,22 +53,12 @@ sources only, and keeps it current without manual work.
 *Updated automatically on 2026-10-21 from the CMF filings. pp = percentage points. Cost of risk is estimated from the allowance roll-forward except where the issuer files the IFRS 9 line (see Method). A note gives the quarter when an issuer lags the others.*
 <!-- latest:end -->
 
-## Before vs after
-
-| | 2023, by hand | Now |
-|---|---|---|
-| Source | Figures copied from financial statements, notes, MD&As and annual reports into an Excel workbook | Every quarterly XBRL filing downloaded from the CMF and parsed |
-| Coverage | Annual 2016–2022, quarterly 2023 | Every quarter from 2016Q1 to the latest filing (185 filings, five issuers) |
-| Update | Repeat the copying for each new quarter | [`update.yml`](.github/workflows/update.yml) runs twice a month (about six minutes) and commits only if validations pass |
-| Checks | Visual | Balance sheet and income statement arithmetic, gaps, jumps, restatements, bucket consistency — errors block publication |
-| Command | — | `python -m clinics.update && python -m clinics.figures` |
-
 ## What moved first
 
 The answer to the question above, from [`sequence.csv`](data/processed/sequence.csv): for each issuer, the first
 quarter from 2022 in which each indicator left its 2017–2021 range in the adverse direction for two consecutive
-quarters. **Collection moved first everywhere it moved at all**: days sales outstanding broke out in 2022Q1–Q2,
-before the Supreme Court ruling; receivables ageing and provisioning followed in 2023–2024; liquidity and margins
+quarters. **Collection moved first, or jointly first, everywhere it moved at all**: days sales outstanding broke out in 2022Q1–Q2,
+before the Supreme Court ruling (at Banmédica together with its margins); receivables ageing and provisioning followed in 2023–2024; liquidity and margins
 came last, and only at CLC did they break together with the provisioning.
 
 | Issuer | Order in which indicators left their 2017–2021 range (first quarter) | No break |
@@ -56,7 +71,10 @@ came last, and only at CLC did they break together with the provisioning.
 \* short pre-crisis baseline (CLC files the ageing note from 2019Q4). Bupa stopped filing in 2022Q1, too early to
 test.
 
-![What moved first](figures/sequence.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/sequence-dark.png">
+  <img alt="First quarter from 2022 in which each indicator left its 2017–2021 range, by issuer: days sales outstanding broke first at CLC, Indisa and Banmédica" src="docs/figures/sequence-light.png">
+</picture>
 
 ## What the data shows
 
@@ -65,7 +83,7 @@ All figures as reported to the CMF.
 - **CLC took the hit in collection, then in provisioning, then everywhere.** Its allowance for credit losses rose
   from 12.6% of gross trade receivables at the end of 2022 to 38.6% at the end of 2024 and 53.8% at the end of 2025.
   In its December 2025 filing it restated December 2024: trade receivables from CLP 85.2 bn to 26.0 bn, equity from
-  204.1 bn to 136.6 bn. Its LTM cost of risk peaked at 16.8% of revenue in mid-2025 (8.7% in 2026Q2).
+  204.1 bn to 136.6 bn. Its LTM cost of risk peaked at 21.4% of revenue in 2025Q3 (8.7% in 2026Q2).
 - **Provisioning explains part of CLC's collapse, not all of it.** Its LTM EBITDA margin fell from 12.5% in mid-2024
   to −43.1% in mid-2025; before credit losses it was −26.3%. The estimate of CLC's credit losses is a lower bound (it
   does not see write-offs), so at least 17 points of the fall were provisioning and the operating margin was −26% or
@@ -76,19 +94,51 @@ All figures as reported to the CMF.
 - **Banmédica, which owns an Isapre, moved fastest**: its DSO, margins and liquidity broke out in 2022, and its
   allowance coverage rose from 22.5% at the end of 2022 to 35.4% at the end of 2023, before it stopped filing in 2024.
 
+## Before vs after
+
+| | 2023, by hand | Now |
+|---|---|---|
+| Source | Figures copied from financial statements, notes, MD&As and annual reports into an Excel workbook | Every quarterly XBRL filing downloaded from the CMF and parsed |
+| Coverage | Annual 2016–2022, quarterly 2023 | Every quarter from 2016Q1 to the latest filing (185 filings, five issuers) |
+| Update | Repeat the copying for each new quarter | [`update.yml`](.github/workflows/update.yml) runs twice a month (about six minutes) and commits only if validations pass |
+| Checks | Visual | Balance sheet and income statement arithmetic, gaps, jumps, restatements, bucket consistency — errors block publication |
+| Command | — | `python -m clinics.update && python -m clinics.figures` |
+
 ## Figures
 
 Regenerated from the data on every update. Hollow rings mark periods a later filing restated; the diamond is the
-restated figure (shown when it moves the indicator by more than 5%). Dashed lines are integrated groups.
+restated figure (shown when it moves the indicator by more than 5%). Dashed lines are integrated groups. Titles are
+written from the data on every run, so they change when the data does. The allowance chart is shown above.
 
-![Allowance for credit losses](figures/allowance_coverage.png)
-![Receivables aged more than 180 days](figures/receivables_over_180.png)
-![Days sales outstanding](figures/dso.png)
-![Overdue trade payables](figures/payables_overdue.png)
-![Current ratio](figures/current_ratio.png)
-![Cost of risk](figures/cost_of_risk.png)
-![EBITDA margin before credit losses](figures/ebitda_before_credit_losses.png)
-![EBITDA margin](figures/ebitda_margin.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/receivables_over_180-dark.png">
+  <img alt="Share of gross trade receivables more than 180 days past due, by issuer, 2016–2026" src="docs/figures/receivables_over_180-light.png">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/dso-dark.png">
+  <img alt="Days sales outstanding by issuer, 2016–2026, with restated figures marked" src="docs/figures/dso-light.png">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/payables_overdue-dark.png">
+  <img alt="Share of trade payables past their due date, by issuer, 2016–2026" src="docs/figures/payables_overdue-light.png">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/current_ratio-dark.png">
+  <img alt="Current ratio by issuer, 2016–2026, with restated figures marked" src="docs/figures/current_ratio-light.png">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/cost_of_risk-dark.png">
+  <img alt="LTM cost of risk by issuer, 2016–2026: CLC peaked in 2025 while Indisa and RedSalud stayed near 2%" src="docs/figures/cost_of_risk-light.png">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/ebitda_margin-dark.png">
+  <img alt="LTM EBITDA margin before and after credit losses by issuer, 2016–2026" src="docs/figures/ebitda_margin-light.png">
+</picture>
 
 ## Coverage
 
@@ -163,7 +213,7 @@ against SEC filings.
 ```bash
 pip install .
 python -m clinics.update --out data/processed   # download, rebuild, validate (exit 1 on errors)
-python -m clinics.figures                        # redraw figures/ from data/processed
+python -m clinics.figures                        # redraw docs/figures/ from data/processed
 python -m clinics.probe --quick                  # check which filings can be downloaded
 ```
 

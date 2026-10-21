@@ -1,8 +1,9 @@
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
 from clinics import figures
-from clinics.issuers import load_issuers
 
 
 def _st(period, variable, kind, value, revised=None):
@@ -35,14 +36,14 @@ def test_revised_indicators_only_material_and_flows_only_in_q4():
     assert ("dso", "2025Q2") not in rv.index and ("current_ratio", "2024Q4") not in rv.index
 
 
-def test_plot_writes_png(tmp_path):
-    ind = pd.DataFrame(
-        [
-            {"issuer": k, "period": p, "indicator": "dso", "value": v}
-            for k in ("clc", "indisa")
-            for p, v in (("2024Q4", 100), ("2025Q1", 110))
-        ]
-    )
-    rv = pd.DataFrame([{"issuer": "clc", "period": "2024Q4", "as_reported": 100, "revised": 60, "indicator": "dso"}])
-    path = figures.plot(ind, rv, "dso", tmp_path, load_issuers())
-    assert path.read_bytes()[:4] == b"\x89PNG"
+DATA = Path(__file__).resolve().parents[1] / "data" / "processed"
+
+
+@pytest.mark.skipif(not (DATA / "sequence.csv").exists(), reason="published tables not present")
+def test_render_writes_light_and_dark_png(tmp_path):
+    paths = figures.render(DATA, tmp_path)
+    names = {p.name for p in paths}
+    assert len(paths) == 2 * len(figures.FIGURES)
+    for name in figures.FIGURES:
+        assert {f"{name}-light.png", f"{name}-dark.png"} <= names
+    assert all(p.read_bytes()[:4] == b"\x89PNG" for p in paths)

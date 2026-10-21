@@ -9,7 +9,7 @@
   "updated": "2026-10-21",
   "source": "CMF XBRL filings: financial statements and notes (as reported)",
   "headline": "In 2026Q2, CLC's allowance covered 48% of its gross trade receivables (at most 18% in 2017–2021); LTM cost of risk was 8.7% at CLC, 1.7% at Indisa and 2.0% at RedSalud.",
-  "figure": "figures/allowance_coverage.png",
+  "figure": "docs/figures/allowance_coverage-light.png",
   "metrics": [
     {
       "id": "clc_allowance_coverage",

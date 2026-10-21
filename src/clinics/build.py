@@ -25,7 +25,7 @@ METRICS = {
     "cost_of_risk": "Cost of risk (credit losses / revenue, LTM)",
     "ebitda_before_credit_losses_margin": "EBITDA margin before credit losses, LTM",
 }
-FIGURE = "figures/allowance_coverage.png"
+FIGURE = "docs/figures/allowance_coverage-light.png"
 
 
 def _prev(period: str) -> str:
