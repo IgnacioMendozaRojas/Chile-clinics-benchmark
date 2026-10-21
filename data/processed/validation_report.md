@@ -1,6 +1,6 @@
 # Validation report
 
-**0 errors, 5 warnings, 91 info.**
+**0 errors, 5 warnings, 92 info.**
 
 ## Coverage
 
@@ -10,7 +10,7 @@
 | indisa | 42 | 2016Q1 | 2026Q2 |
 | redsalud | 42 | 2016Q1 | 2026Q2 |
 | banmedica | 34 | 2016Q1 | 2024Q2 |
-| bupa | 24 | 2016Q1 | 2022Q1 |
+| bupa | 25 | 2016Q1 | 2022Q1 |
 
 ## Warnings
 
@@ -44,6 +44,7 @@
 | restated | banmedica | 2023Q2 | 1 | 1 figures restated: AdministrativeExpense |
 | restated | banmedica | 2023Q4 | 5 | 5 figures restated: CurrentLeaseLiabilities, NoncurrentLeaseLiabilities, OtherCurrentFinancialLiabilities, OtherNoncurrentFinancialLiabilities, PropertyPlantAndEquipment |
 | restated | bupa | 2016Q1 | 3 | 3 figures restated: CashFlowsFromUsedInOperatingActivities, FinanceCosts, PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities |
+| restated | bupa | 2016Q2 | 2 | 2 figures restated: CashFlowsFromUsedInOperatingActivities, FinanceCosts |
 | restated | bupa | 2016Q3 | 3 | 3 figures restated: CashFlowsFromUsedInOperatingActivities, DepreciationAndAmortisationExpense, FinanceCosts |
 | restated | bupa | 2016Q4 | 5 | 5 figures restated: CurrentLiabilities, DepreciationAndAmortisationExpense, Equity, EquityAttributableToOwnersOfParent, Liabilities |
 | restated | bupa | 2017Q2 | 2 | 2 figures restated: CashFlowsFromUsedInOperatingActivities, PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities |

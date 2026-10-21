@@ -17,6 +17,7 @@ info,restated,banmedica,2021Q3,1.0,1 figures restated: FinanceIncome
 info,restated,banmedica,2023Q2,1.0,1 figures restated: AdministrativeExpense
 info,restated,banmedica,2023Q4,5.0,"5 figures restated: CurrentLeaseLiabilities, NoncurrentLeaseLiabilities, OtherCurrentFinancialLiabilities, OtherNoncurrentFinancialLiabilities, PropertyPlantAndEquipment"
 info,restated,bupa,2016Q1,3.0,"3 figures restated: CashFlowsFromUsedInOperatingActivities, FinanceCosts, PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities"
+info,restated,bupa,2016Q2,2.0,"2 figures restated: CashFlowsFromUsedInOperatingActivities, FinanceCosts"
 info,restated,bupa,2016Q3,3.0,"3 figures restated: CashFlowsFromUsedInOperatingActivities, DepreciationAndAmortisationExpense, FinanceCosts"
 info,restated,bupa,2016Q4,5.0,"5 figures restated: CurrentLiabilities, DepreciationAndAmortisationExpense, Equity, EquityAttributableToOwnersOfParent, Liabilities"
 info,restated,bupa,2017Q2,2.0,"2 figures restated: CashFlowsFromUsedInOperatingActivities, PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities"
